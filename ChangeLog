@@ -1,3 +1,12 @@
+2002-02-21  Mark Phillips  <mbp@geomtech.com>
+
+	* release 0.9.3
+
+	* modified settings in configure script and Makefile to allow this
+	  distribution to be configured and built outside of the Geomview
+	  source tree.  (This was actually pretty easy, since there isn't
+	  anything to compile.)
+
 2001-03-18  Mark Phillips  <mbp@geomtech.com>
 
 	* created version of Orrery that uses Geomview's GNU autoconf

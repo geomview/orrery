@@ -1,6 +1,4 @@
-top_geom_srcdir = $(top_srcdir)/../../../../..
-
-datamodulesorreryorrdir = $(geomdatadir)/modules/orrery/orr
+datamodulesorreryorrdir = $(prefix)/share/geomview/modules/orrery/orr
 
 datamodulesorreryorr_DATA =       \
   Hale-Bopp-03.31-context.orr	  \

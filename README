@@ -1,13 +1,21 @@
 			      THE ORRERY
-			    Version 0.9.2
+			    Version 0.9.3
 
-  [ Note: This release of the Orrery, version 0.9.2, is essentially   ]
-  [ the same as the original one that Stuart Levy released in 1997.   ]
-  [ The only difference is in the organization of the files --- this  ]
-  [ copy is modified to work with the new Geomview source tree and    ]
-  [ Makefile system.						      ]
-  [ 								      ]
-  [ mbp Sun Mar 18 19:05:46 2001				      ]
+[ Note: This release of the Orrery, version 0.9.3, is the same as       ]
+[ version 0.9.2 with the exception that I've changed some of the        ]
+[ settings in the Makefiles and the configure script in order to allow  ]
+[ this version to be configured and built outside the Geomview source   ]
+[ tree.  I did this in order to facilitate creating source and binary   ]
+[ RPMs for Orrery.                                                      ]
+[                                                                       ]
+[ mbp Thu Feb 21 16:30:00 2002                                          ]
+[                                                                       ]
+[ Release 0.9.2 of the Orrery was essentially the same as the original  ]
+[ one that Stuart Levy released in 1997.  The only difference is in the ]
+[ organization of the files --- this copy is modified to work with the  ]
+[ new Geomview source tree and Makefile system.                         ]
+[                                                                       ]
+[ mbp Sun Mar 18 19:05:46 2001                                          ]
 
 The Orrery is a digital model of the solar system, named for the mechanical
 models of the same name (often you'll see one with just the Sun, Earth

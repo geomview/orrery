@@ -1,5 +1,3 @@
-top_geom_srcdir = $(top_srcdir)/../../..
-
 EXTRA_DIST =        \
   mktxmesh          \
   orrery_funcs.c    \
@@ -14,26 +12,21 @@ EXTRA_DIST =        \
 
 SUBDIRS = data
 
+moduledir = $(libexecdir)/geomview
+
 module_DATA = .geomview-orrery
 
 .geomview-orrery:
-	echo '(emodule-define "Orrery" "wish $$GEOMROOT/data/modules/orrery/orrery")' > .geomview-orrery
+	echo '(emodule-define "Orrery" "wish $$GEOMDATA/modules/orrery/orrery")' > .geomview-orrery
 
-all-local:
-	$(top_geom_srcdir)/mkmodulesdir $(top_geom_builddir)
-	echo '(emodule-define "Orrery" "wish $$GEOMROOT/data/modules/orrery/orrery")' > $(top_geom_builddir)/modules/.geomview-orrery
-	@if [ \! -d ${top_geom_srcdir}/data/modules ] ; then \
-	  echo mkdir ${top_geom_srcdir}/data/modules ; \
-	  mkdir ${top_geom_srcdir}/data/modules ; \
-	fi
-	@(cwd=`pwd`; thisdir=`basename $$cwd` ;                  \
-	  echo rm -f ${top_geom_srcdir}/data/modules/orrery ;    \
-	  rm -f ${top_geom_srcdir}/data/modules/orrery ;         \
-	  echo cd ${top_geom_srcdir}/data/modules ;              \
-	  cd ${top_geom_srcdir}/data/modules ;                   \
-	  echo ln -s ../../src/bin/$$thisdir/data orrery ;       \
-	  ln -s ../../src/bin/$$thisdir/data orrery)
 
+#install-data-local:
+#	@if [ \! -d ${datadir}/geomview/modules ] ; then \
+#	  echo mkdir ${datadir}/geomview/modules ; \
+#	  mkdir ${datadir}/geomview/modules ; \
+#	fi
+#	rm -f ${datadir}/geomview/modules/orrery
+#	cp -r data ${datadir}/geomview/modules/orrery
 
 MAINTAINERCLEANFILES = .geomview-orrery
 

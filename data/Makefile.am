@@ -1,8 +1,6 @@
-top_geom_srcdir = $(top_srcdir)/../../../..
-
 SUBDIRS = orr
 
-datamodulesorrerydir = $(geomdatadir)/modules/orrery
+datamodulesorrerydir = $(prefix)/share/geomview/modules/orrery
 
 datamodulesorrery_DATA =     \
   orrery                     \

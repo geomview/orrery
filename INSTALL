@@ -1,6 +1,11 @@
 Installing The Orrery
 ---------------------
 
+[ Note: if you're interested in installing the Orrery on Linux from
+  an RPM, you can ignore this file.  Just install the RPM (after
+  installing the Geomview RPM itself, of course), and next time
+  you run Geomview, you'll see "Orrery" listed in the list of modules ]
+
 Quick summary
 -------------
 
