@@ -1,11 +1,25 @@
-/* Copyright (c) 1995 The Geometry Center; University of Minnesota
-   1300 South Second Street;  Minneapolis, MN  55454, USA;
 
-This file is part of geomview/OOGL. geomview/OOGL is free software;
-you can redistribute it and/or modify it only under the terms given in
-the file COPYING, which you should have received along with this file.
-This and other related software may be obtained via anonymous ftp from
-geom.umn.edu; email: software@geom.umn.edu. */
+/* This file is part of the Orrery, a solar system simulator for
+   Geomview (see www.geomview.org for details).
+   
+   The orrery is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+   
+   The orrery is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with the Orrery; see the file COPYING.  If not, write to the
+   Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA. */
+
+/* Copyright (c) 1995 The Geometry Center; University of Minnesota
+   1300 South Second Street;  Minneapolis, MN  55454, USA; */
+
 
 /* The Orrery module can run either under a standard "wish" (tk 4.0 or later),
  * or in a wish that includes these functions; their presence will speed it

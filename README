@@ -125,8 +125,8 @@ CREDITS
 This Orrery module was written, originally as a demonstration of Geomview
 texture mapping, by Stuart Levy (slevy@ncsa.uiuc.edu) at the Geometry Center,
 University of Minnesota and is copyright (c) 1997, University of Minnesota.
-Non-commercial use and redistribution are permitted so long as this notice
-remains.
+It is free software, available under the terms of the GNU Public License;
+see the file COPYING for details.
 
 The formulae for calculating the Moon's position were adapted from Elwood
 Downey's "ephem" program, <URL:ftp://iraf.noao.edu/contrib/xephem/ephem>;

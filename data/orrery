@@ -1,12 +1,32 @@
 #! /usr/local/bin/wish
 
+# This file is part of the Orrery, a solar system simulator for
+# Geomview (see www.geomview.org for details).
+#
+# The orrery is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# The orrery is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with the Orrery; see the file COPYING.  If not, write to the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+# MA 02111-1307, USA.
+
 # Solar System Orrery
 # By Stuart Levy, Geometry Center, University of Minnesota  slevy@geom.umn.edu
 # February, 1996
-
-# $Log: orrery,v $
-# Revision 1.1  2001/03/19 01:41:21  mphillips
-# Initial revision
+## $Log: orrery,v $
+## Revision 1.2  2001/03/19 16:36:46  mphillips
+## *** empty log message ***
+##
+# Revision 1.1.1.1  2001/03/19 01:41:21  mphillips
+# imported sources
 #
 # Revision 1.17  1997/04/26  03:18:26  slevy
 # Add "orr" subdir of data directory to search path.
