@@ -2,6 +2,7 @@
 
 	* created version of Orrery that uses Geomview's GNU autoconf
 	  and Makefile system and which is "insertable" into
-	  an existing geomview 1.8.0 (or higher) source tree.
+	  an existing geomview 1.8.0 (or higher) source tree.  See
+	  INSTALL for installation details.
 	
         * release 0.9.2
