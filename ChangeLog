@@ -1,0 +1,7 @@
+2001-03-18  Mark Phillips  <mbp@geomtech.com>
+
+	* created version of Orrery that uses Geomview's GNU autoconf
+	  and Makefile system and which is "insertable" into
+	  an existing geomview 1.8.0 (or higher) source tree.
+	
+        * release 0.9.2

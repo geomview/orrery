@@ -1,0 +1,11 @@
+appearance {
+	texture {
+		file moon.pgm.gz
+		transform
+		  1  0 0 0
+		  0 .96 0 0
+		  0  0 1 0
+		  .5 .02 0 1
+	}
+}
+< cyl.mesh

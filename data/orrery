@@ -1,0 +1,2930 @@
+#! /usr/local/bin/wish
+
+# Solar System Orrery
+# By Stuart Levy, Geometry Center, University of Minnesota  slevy@geom.umn.edu
+# February, 1996
+
+# $Log: orrery,v $
+# Revision 1.1  2001/03/19 01:41:21  mphillips
+# Initial revision
+#
+# Revision 1.17  1997/04/26  03:18:26  slevy
+# Add "orr" subdir of data directory to search path.
+# New gvbegin{} ... gvend{} & gvnest keep track of (progn ... )
+# nesting level for geomview.
+# We're version 0.9.
+# Keep track of objects orbiting around body X: in Orr(centered,X).
+# Allow for C-language replacements for our vector arithmetic routines:
+# only define them if not already present.
+# Fix orthog3 in degenerate case.
+# Don't let loadfilecache{} believe empty expansions of a dir-path name,
+# lest it search for files in "/"!
+# Don't check existence of each file we test, in findpath{}; this saves
+# a huge amount of time when opening Display... panel in NFS-filesystem case.
+# Add "Help" button.
+# Move message box to bottom of panel, leaving it plenty of room to expand.
+# Double-clicking on either "Swell" or the message box will open the
+# command panel.
+# Ugly workaround for geomview picking bugs: if we're watching from X,
+# make both X and its satellites unpickable (unless X is the Sun).
+# Clean up Display... scrolling-list interaction.
+# Evade bugs in wish 8.0's "tk_bisque" command; explicitly set
+# Display... panel's background & scrollbar colors.
+# Use "scan" to parse geomview responses -- they needn't be valid lists!
+# Avoid sending & awaiting geomview "tick"s if progn-nesting level
+# isn't zero.  XXX Need to make this deal with surprise exceptions!
+# Set wrap-length of message box -- it'll grow down, but not sideways.
+# New elong{} returns table of 3-body distances and angles.
+# New gvstop{} sends geomview an "H"!
+# Force saving to *.orr.
+# Load & use file browser.
+#
+# Revision 1.16  1997/04/06  05:34:41  slevy
+# More tidying: use glob -nocomplain, and file tail.
+#
+# Revision 1.15  1997/04/04  23:59:48  slevy
+# Tidy: valueor{} procedure returns the value of given variable, or default.
+# Remove H-B default-tail kludge.
+# Tag watched-from objects as being unpickable, so picking is usable.
+#
+# Revision 1.14  1997/04/04  19:27:09  slevy
+# In findpath, don't re-test existence of a file if it's in our
+# filecache; this saves a huge amount of time when opening the Display
+# panel, if we're using a slow NFS filesystem.
+# Add "unique" option for findpathall.
+# "Stars" button now displays a menu of all "stars...oogl" files.
+# "Save" saves tails.
+#
+# Revision 1.13  1997/04/03  03:56:17  slevy
+# Add load/save buttons.  "Load" shows a menu of all *.orr files in
+# the current directory or the file path; "Save" opens a 1-line entry box.
+# They save as much state as we can reach.
+# "Orr(up)" used by looktoward{}; it's a 3-element list, "body lat lon",
+# and determines the "up" direction.
+#
+# Revision 1.12  1997/04/01  22:04:13  slevy
+# Move lots of globals into array Orr().
+# Replace boolean +/-edges, +/-textured, +/-visible knobs with one
+# four-valued "visibility state".
+# Add "tail" command.
+# Implement picking.
+# Use watch-cursor when we're being sluggish.
+#
+# Revision 1.11  1997/03/21  20:35:29  slevy
+# Move a few more globals into Orr().
+# Implement labeling, using vectext.tcl (kept in our data directory).
+# Move "All" entry in "Display..." panel off the scrollable list, so it's
+# always visible.
+#
+# Revision 1.10  1997/03/19  06:03:20  slevy
+# Lots of hacking.  Add appearance controls.  Move some globals into
+# global arrays Orr() and Orrsel().
+#
+# Revision 1.9  1997/02/27  21:02:19  slevy
+# Provide ui stubs in case we're just running under tclsh as a calculator.
+# Likewise, "closedloop" flag records whether we're talking to geomview.
+# "gv_version" needed to remember whether we can fix the star field
+# with respect to the camera.
+#
+# Revision 1.8  1996/10/15  21:44:35  slevy
+# Partly add ephemeris-tracking.
+# Process command line options properly.
+# We're no longer ornery, alas.
+#
+# Revision 1.7  1996/03/25  23:34:51  slevy
+# Make scales jump to position when selected with middle-mouse,
+# as other people's scales do.
+# Set resolution: adjust all scales in 20% increments.
+#
+# Revision 1.6  1996/03/25  23:01:11  slevy
+# Add much improved lunar ephemeris, from Elwood Downey's "ephem",
+# taken in turn from Duffet-Smith's "Astronomy with your Personal Computer".
+# Read command-line code before loading gv, so "set quiet 1" works.
+#
+# Revision 1.5  1996/03/15  03:28:54  slevy
+# Become a standard module.  Search for datafiles on $Orr(filepath),
+# which we make include $GEOMDATA/modules/orrery.
+# Use much finer elliptical proto-orbit, to handle Hyakutake's extreme
+# orbit nicely.
+# New functions: spikes  startdate step enddate body [body2]
+# draws segments connecting body with its projection on the ecliptic plane
+# (or with body2 if given).
+# New function eclgrid draws an X-Y grid on the ecliptic plane.
+# Try to inhale setfontsize script.
+# 
+# revision 1.4
+# date: 1996/02/29 03:34:39;  author: slevy;  state: Exp;  lines: +53 -17
+# Add approximate lunar precession.
+# Fix up date2str and str2date again.  Use "scan" rather than string-splitting
+# to ensure we never interpret numbers as octal!  And, handle boundary
+# conditions better.
+#
+# revision 1.3
+# date: 1996/02/28 02:15:49;  author: slevy;  state: Exp;  lines: +29 -12
+# Unroll loops to speed up vmmul.
+# Allow switching days/sec label to measure days/tick instead.
+# Allow recording -- new "record startframeno filestem" command.
+#
+# revision 1.2
+# date: 1996/02/25 02:54:31;  author: slevy;  state: Exp;  lines: +261 -77
+# Initialize date to current moment.
+# Read command-line args as initial command(s).
+# Add equatorial grid.
+# Present dates properly.
+# Display and accept hours and minutes, not just decimal days.
+# Exit quietly on error writing to geomview.
+# Avoid use of "unpack", speeding up by a factor of 2!
+# Don't use body orientation for bodies displayed with simply "data/ball".
+#
+
+
+
+# Globals.
+
+set pi 3.14159265358979
+set tcl_precision 15
+
+#  Geomview communication:
+
+set Orr(acktime) -1
+set Orr(running) 0
+set Orr(awaitack) 0
+set Orr(needtick) 0
+set Orr(gvnest) 0
+set Orr(gvloaded) 0
+set Orr(closedloop) 1
+set Orr(finemoon) 1
+# With Orr(finemoon)=1, use fairly accurate lunar ephemeris;
+# with Orr(finemoon)=0, use much cruder one, off by several hours.
+
+
+#  Ephemeris:
+#	This script's unit of distance is one astronomical unit (A.U.),
+#	and its unit of time is a mean solar day
+
+set Orr(filepath) {data $GEOMDATA/modules/orrery $GEOMDATA/modules/orrery/orr}
+set Orr(elementfile) "orrery.elements"
+set Orr(epochyear) 1996.0
+set Orr(now) 0;			# Measured in *days* since Orr(epochyear)
+set Orr(km) [expr 1/149597927.0];	# astronomical units per km
+set Orr(year) 365.24219;		# days per mean solar Earth year
+set Orr(allbods) {}
+
+#  UI:
+
+set Orr(version) 0.9
+set Orr(trackcam) "Camera"
+set Orr(followobj) ""
+set Orr(watchobj) ""
+set Orr(fixobj) ""
+set Orr(fixdir) ""
+set Orr(dps) 1.0
+set Orr(swell) 1000.0
+set Orr(stars) ""
+set Orr(labelsize) 0.1
+set Orr(lastlabelconf) {0.1 1000.0}
+set Orr(orbits) 0
+set Orr(eqgrids) 0
+set Orr(eqgridstep) {1 10}
+set Orr(selbg) bisque3
+
+set Orr(mdays) {0 0 31 59 90 120 151 181 212 243 273 304 334 365 396}
+set Orr(mnames) {0 Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec}
+
+proc str2date {astr} {
+  global Orr
+  set str $astr
+  set hour 0; set min 0; set sec 0; set mm 1; set dd 1
+  set yyyy $Orr(epochyear)
+  if {[regexp {([0-9]+:[0-9.:]+)} $str hms]} {
+	regsub {[ 	]*[0-9]+:[0-9.:]+[ 	]*} $str {} str
+	scan $hms %f:%f:%f hour min sec
+  }
+  if {[regexp {^[-.0-9eE]+$} $str] && [catch {set yyyy [expr 0.+$str]}] == 0} {
+	set mm 1
+	set yyyy [expr int(floor($str))]
+	set dd [expr ($str-$yyyy)*[daysin $yyyy]]
+
+  } elseif {[scan $str %f/%f/%f mm dd yyyy] > 1} {
+	# Fine.
+  } elseif {[scan $str %d.%d.%d yyyy mm dd] <= 1} {
+	# Failed.
+	msg "Can't understand date string: $str"
+	return $Orr(now)
+  }
+  set m0 [lindex $Orr(mdays) [expr int($mm+0)]]
+  set iy [expr int($yyyy)]
+  if {$mm>2 && $iy%4 == 0 && $iy%400 != 0} {
+	incr m0
+  }
+  set y0 [expr ($yyyy - $Orr(epochyear))*365 \
+	+ floor(($iy-1)/4) - floor(($Orr(epochyear)-1)/4) \
+	- floor(($iy-1)/400) + floor(($Orr(epochyear)-1)/400)]
+  return [expr $y0 + $m0 + $dd + (($sec/60. + $min)/60. + $hour)/24.]
+}
+
+proc daysin {year} {
+  expr ((int($year)%4 == 0) && (int($year)%400 != 0)) ? 366 : 365
+}
+
+# Convert date to displayable value
+proc date2str {days} {
+  global Orr
+  set years [expr floor($days/365.)]
+  # Round up to final precision (1/1440-day units)
+  set d0 [expr $days + .5/1440]
+  set frac [expr $d0 - floor($d0)]
+  set d0 [expr int(floor($d0))]
+  set d [expr int($d0 - (365*$years) - int($years/4) + int($years/400))]
+
+  # That should get us close; use str2date to get an exact figure, and fudge.
+  set year [expr int($years+$Orr(epochyear))]
+  set thatwas [str2date 1/$d/$year]
+
+  incr d [expr int($d0-$thatwas)]
+  if {$d < 1} {
+	incr year -1
+	incr d [daysin $year]
+  } elseif {$d >= [daysin $year]+1} {
+	incr d -[daysin $year]
+	incr year
+  }
+  if {$d < 1 || $d > 366} {
+	puts stderr "Trouble: date2str $days => year $year day $d"
+  }
+  set m [expr int($d/29)+1]
+  set mday [lindex $Orr(mdays) $m]
+  set nextmday [lindex $Orr(mdays) [expr $m+1]]
+  if {$d < $mday+1} {
+	incr m -1
+	set mday [expr [lindex $Orr(mdays) $m]+0]
+  } elseif {$d >= $nextmday+1} {
+	incr m
+	set mday $nextmday
+  }
+  incr d -$mday
+
+  if {$m > 2 && [daysin $year] > 365} {
+	incr d -1
+	if {$d < 1} {
+	    incr m -1
+	    incr d [expr $mday-[lindex $Orr(mdays) $m]]
+	    if {$m == 2} {
+		incr d
+	    }
+	}
+  }
+  set hour [expr int($frac*24)]
+  set min [expr int(60*($frac*24 - $hour))]
+  return [format "%04d.%02d.%02d %02d:%02d" $year $m $d $hour $min]
+}
+
+
+# Orbital element routines
+
+# Orbital elements:  for each body we store elem(name), a list containing:
+#  0  center	body name of body about which we orbit, or "" if Sun
+#  1  a		semimajor axis (in AU, even though orrery.elements gives km)
+#  2  e		eccentricity
+#  3  i		inclination (to Earth ecliptic 2000)
+#  4  node	longitude of ascending node (angle in ecliptic from vern eq. to node)
+#  5  peri	argument of periapsis (angle in orbit plane from node to peri)
+#  6  anom	mean anomaly: fraction of period past periapsis, at epoch date
+#  7  motion	mean motion, degrees per day (i.e. 360/orbital period)
+#  8  orient	3x3 orientation matrix (X = periapsis vector, XY = orbital plane)
+
+# We also store phys(name), a list containing:
+#  0  r		body radius (in AU, even though orrery.elements gives km)
+#  1  ob	oblateness (rpolar = r/(1 + ob))
+#  2  rate	rotation rate, rotations per day
+#  3  gm	G*body's mass
+#  4  orient	3x3 orientation matrix (Z = N pole, X = prime meridian)
+#		  as of epoch date, stored as 9-element list.
+
+
+proc forallbodies {func args} {
+  global Orr Orrsel
+  foreach Bbody [array names Orrsel b_*] {
+    if {$Orrsel($Bbody)} {
+	scan $Bbody {b_%s} body
+	lappend selbodies $body
+    }
+  }
+  if {![info exists selbodies]} {
+    set selbodies $Orr(allbods)
+  }
+  foreach body $selbodies {
+    if {$body != "All"} {
+	eval $func $body $args
+    }
+  }
+}
+  
+proc visible {body {setvis ""}} {
+  global Orr
+  if {$setvis != ""} {
+    set Orr(vstate,$body) $setvis
+  } else {
+    valueor Orr(vstate,$body) 2
+  }
+}
+
+proc labeled {body {show {}}} {
+  global Orr
+  if {![info exists Orr(vis,$body)]} {
+    set Orr(vis,$body) {}
+  }
+  switch -- $show {
+    0 { regsub -all L $Orr(vis,$body) {} Orr(vis,$body) }
+    1 { if {[string first L $Orr(vis,$body)]<0} { append Orr(vis,$body) L } }
+  }
+  expr [string first L $Orr(vis,$body)]>=0
+}
+
+proc showorbit {body {show {}}} {
+  global Orr
+  if {![info exists Orr(vis,$body)]} {
+    set Orr(vis,$body) {}
+  }
+  switch -- $show {
+    0 { regsub -all O $Orr(vis,$body) {} Orr(vis,$body) }
+    1 { if {[string first O $Orr(vis,$body)]<0} { append Orr(vis,$body) O } }
+  }
+  expr [string first O $Orr(vis,$body)]>=0
+}
+
+proc tail {body {au ""} {wide ""}} {
+  global Orr
+  if {$au != ""} {
+    set Orr(tail,$body) "$au $wide"
+    doupdate
+  }
+  valueor Orr(tail,$body) ""
+}
+    
+
+proc texturable {body {is {}}} {
+  global Orr
+  if {$is != ""} {
+    set Orr(cantx,$body) $is
+  }
+  valueor Orr(cantx,$body) 1
+}
+
+proc setelem {name center a e i node peri anom period vpole vmerid  r obl rate gm} {
+  global elem phys Orr
+  set aau [expr $a*$Orr(km)]
+  set rau [expr $r*$Orr(km)]
+  if {$period == 0} {
+    # Well, compute it, assuming Kepler's laws, and assuming we've
+    # already loaded the central body.
+    set timescale 1
+    if {$center != "Sun"} {
+	catch {
+	  set timescale [expr sqrt([lindex $phys(Sun) 3]/[lindex $phys($center) 3])]
+	}
+    }
+    set period [expr $Orr(year)*86400. * $timescale * $aau * sqrt($aau)]
+  }
+  set motion [expr $period==0 ? 0 : 86400. * 360. / $period]
+  set Tperi [rotation z $peri]
+  set Tincl [rotation x $i]
+  set Tnode [rotation z $node]
+  set Torbit [mmmul $Tperi [mmmul $Tincl $Tnode]]
+  set elem($name) [list $center $aau $e $i $node $peri $anom $motion $Torbit]
+
+  set v90 [cross $vpole $vmerid]
+  set phys($name)  [list $rau $obl $rate $gm [concat $vmerid $v90 $vpole]]
+  lappend Orr(allbods) $name
+  lappend Orr(centered,$center) $name
+  .bodymenu add command -label $name -command "stuffbody $name"
+}
+
+proc inhaleelem {file {firstline ""}} {
+  set name ""
+  set line $firstline
+  unpack {0 0 0 0 0 0 0} a e i node peri anom
+  unpack {0 100 0 {0 0 1} {1 0 0} 1 0} period radius oblate vpole vmerid rot gm
+  while {![eof $file]} {
+	set key [lindex $line 0]
+	set val [lindex $line 2]
+	if {[string compare [lindex $line 1] "="]} {
+	    set key ""
+	}
+	switch $key {
+	 NAME {
+	    if {$name != ""} {
+		setelem $name $center $a $e $i $node $peri $anom \
+			$period $vpole $vmerid $radius $oblate $rot $gm
+		unset a e i node peri anom
+		unpack {0 1000 0 {0 0 1} {1 0 0} 1 0 0} period radius oblate vpole vmerid rot gm
+	    }
+	    set name $val
+	 }
+	 CENTER {	set center $val }
+	 ELEM {		unpack $line key eq  a e i node peri anom }
+	 PERIOD {	set period $val }
+	 RPL {		set radius $val }
+	 OJ2 {		set oblate $val }
+	 PV {		set vpole [lrange $line 2 4] }
+	 PM {		set vmerid [lrange $line 2 4] }
+	 ROT {		set rot $val }
+	 GM {		set gm $val }
+	 HIDE {		visible $name 0 }
+	 HIDETHESE {	foreach val [lrange $line 2 end] {
+			  visible $val 0
+			}
+		   }
+			    
+	}
+	gets $file line
+  }
+  # Last entry...
+  if {$name != ""} {
+    setelem $name $center $a $e $i $node $peri $anom $period $vpole $vmerid $radius $oblate $rot $gm
+  }
+}
+
+proc inhaleephem {file {body ""}} {
+   ### Not yet
+}
+
+# Precess the moon's orbit.
+# We add a few extra elements to $elem(Moon) for the initial (epoch time)
+# 'longitude-of-ascending-node' [9] and 'argument-of-perihelion' [10] values.
+
+proc precess_moon {now} {
+  global elem orboogl Orr
+
+  set mel $elem(Moon)
+  if {[llength $mel] == 9} {
+	set i [lindex $mel 3]
+	set Tincl [rotation x $i]
+	lappend elem(Moon) [lindex $mel 4] [lindex $mel 5] $Tincl
+  } else {
+	set Tincl [lindex $mel 11]
+  }
+  set node [expr [lindex $elem(Moon) 9] - ($now*360/6793.5)]
+  set peri [expr [lindex $elem(Moon) 10] + ($now*360/2190.34)]
+  set Tperi [rotation z $peri]
+  set Tnode [rotation z $node]
+  set Torbit [mmmul $Tperi [mmmul $Tincl $Tnode]]
+  set elem(Moon) [lreplace $elem(Moon) 8 8 $Torbit]
+
+  set a [lindex $mel 1]
+  set e [lindex $mel 2]
+  set b [expr $a*sqrt(1-$e*$e)]
+  set orbx [svmul $a [lrange $Torbit 0 2]]
+  set orby [svmul $b [lrange $Torbit 3 5]]
+  set orbz [svmul $a [lrange $Torbit 6 8]]
+  set orboff [svmul -$e $orbx]
+  puts "(hdefine geometry Moon.orbit { INST transform $orbx 0 $orby 0 $orbz 0 $orboff 1 geom : protorb })"
+}
+
+# More accurate lunar ephemeris, translated from Elwood Downey's "ephem"
+# program, who got it in turn by translation from Peter Duffet-Smith's book
+# "Astronomy with your Personal Computer", Cambridge University Press, 1985.
+# The following is used instead of "placebody" if global "Orr(finemoon)" is 1.
+
+proc placeMoon {now} {
+  global pi Orr
+  set degrad [expr $pi/180]
+
+  set mjd [expr $now+2450082.5-2415020]
+  set t [expr $mjd/36525.]
+  set t2 [expr $t*$t]
+
+  set m1 [expr $mjd/27.32158213]; set m1 [expr 360*($m1-floor($m1))]
+  set m2 [expr $mjd/365.2596407]; set m2 [expr 360*($m2-floor($m2))]
+  set m3 [expr $mjd/27.55455094]; set m3 [expr 360*($m3-floor($m3))]
+  set m4 [expr $mjd/29.53058868]; set m4 [expr 360*($m4-floor($m4))]
+  set m5 [expr $mjd/27.21222039]; set m5 [expr 360*($m5-floor($m5))]
+  set m6 [expr $mjd/6798.363307]; set m6 [expr 360*($m6-floor($m6))]
+
+  set ld [expr 270.434164+$m1-(.001133-.0000019*$t)*$t2]
+  set ms [expr 358.475833+$m2-(.00015+.0000033*$t)*$t2]
+  set md [expr 296.104608+$m3+(.009192+.0000144*$t)*$t2]
+  set de [expr 350.737486+$m4-(.001436-.0000019*$t)*$t2]
+  set f [expr 11.250889+$m5-(.003211+.0000003*$t)*$t2]
+  set n [expr $degrad*(259.183275-$m6+(.002078+.000022*$t)*$t2)]
+
+  set sn [expr sin($n)]
+  set sa [expr sin($degrad*(51.2+20.2*$t))]
+  set sb [expr .003964*sin($degrad*(346.56+(132.87-.0091731*$t)*$t))]
+  set c  [expr $n+$degrad*(275.05-2.3*$t)]
+  set sc [expr sin($c)]
+
+  set ld [expr $degrad*($ld+.000233*$sa+$sb+.001964*$sn)]
+  set ms [expr $degrad*($ms-.001778*$sa)]
+  set md [expr $degrad*($md+.000817*$sa+$sb+.002541*$sn)]
+  set f  [expr $degrad*($f+$sb-.024691*$sn-.004328*$sc)]
+  set de [expr $degrad*($de+.002011*$sa+$sb+.001964*$sn)]
+  set e  [expr 1-(.002495+7.52e-06*$t)*$t]
+  set e2 [expr $e*$e]
+
+  set l [expr 6.28875*sin($md)+1.27402*sin(2*$de-$md)+.658309*sin(2*$de)+ \
+	.213616*sin(2*$md)-$e*.185596*sin($ms)-.114336*sin(2*$f)+ \
+	.058793*sin(2*($de-$md))+.057212*$e*sin(2*$de-$ms-$md)+ \
+	.05332*sin(2*$de+$md)+.045874*$e*sin(2*$de-$ms)+.041024*$e*sin($md-$ms)]
+  set l [expr $l-.034718*sin($de)-$e*.030465*sin($ms+$md)+.015326*sin(2*($de-$f))- \
+	.012528*sin(2*$f+$md)-.01098*sin(2*$f-$md)+.010674*sin(4*$de-$md)+ \
+	.010034*sin(3*$md)+.008548*sin(4*$de-2*$md)-$e*.00791*sin($ms-$md+2*$de)- \
+	$e*.006783*sin(2*$de+$ms)]
+  set l [expr $l+.005162*sin($md-$de)+$e*.005*sin($ms+$de)+.003862*sin(4*$de)+ \
+	$e*.004049*sin($md-$ms+2*$de)+.003996*sin(2*($md+$de))+ \
+	.003665*sin(2*$de-3*$md)+$e*.002695*sin(2*$md-$ms)+ \
+	.002602*sin($md-2*($f+$de))+$e*.002396*sin(2*($de-$md)-$ms)- \
+	.002349*sin($md+$de)]
+  set l [expr $l+$e2*.002249*sin(2*($de-$ms))-$e*.002125*sin(2*$md+$ms)- \
+	$e2*.002079*sin(2*$ms)+$e2*.002059*sin(2*($de-$ms)-$md)- \
+	.001773*sin($md+2*($de-$f))-.001595*sin(2*($f+$de))+ \
+	$e*.00122*sin(4*$de-$ms-$md)-.00111*sin(2*($md+$f))+.000892*sin($md-3*$de)]
+#  set l [expr $l-$e*.000811*sin($ms+$md+2*$de)+$e*.000761*sin(4*$de-$ms-2*$md)+ \
+#	$e2*.000704*sin($md-2*($ms+$de))+$e*.000693*sin($ms-2*($md-$de))+ \
+#	$e*.000598*sin(2*($de-$f)-$ms)+.00055*sin($md+4*$de)+.000538*sin(4*$md)+ \
+#	$e*.000521*sin(4*$de-$ms)+.000486*sin(2*$md-$de)]
+#  set l [expr $l+$e2*.000717*sin($md-2*$ms)]
+  set lam [expr $ld+$degrad*$l]
+
+  set g [expr 5.12819*sin($f)+.280606*sin($md+$f)+.277693*sin($md-$f)+ \
+	.173238*sin(2*$de-$f)+.055413*sin(2*$de+$f-$md)+.046272*sin(2*$de-$f-$md)+ \
+	.032573*sin(2*$de+$f)+.017198*sin(2*$md+$f)+.009267*sin(2*$de+$md-$f)+ \
+	.008823*sin(2*$md-$f)+$e*.008247*sin(2*$de-$ms-$f)]
+ set g [expr $g+.004323*sin(2*($de-$md)-$f)+.0042*sin(2*$de+$f+$md)+ \
+	$e*.003372*sin($f-$ms-2*$de)+$e*.002472*sin(2*$de+$f-$ms-$md)+ \
+	$e*.002222*sin(2*$de+$f-$ms)+$e*.002072*sin(2*$de-$f-$ms-$md)+ \
+	$e*.001877*sin($f-$ms+$md)+.001828*sin(4*$de-$f-$md)-$e*.001803*sin($f+$ms)- \
+	.00175*sin(3*$f)]
+# set g [expr $g+$e*.00157*sin($md-$ms-$f)-.001487*sin($f+$de)-$e*.001481*sin($f+$ms+$md)+ \
+#	$e*.001417*sin($f-$ms-$md)+$e*.00135*sin($f-$ms)+.00133*sin($f-$de)+ \
+#	.001106*sin($f+3*$md)+.00102*sin(4*$de-$f)+.000833*sin($f+4*$de-$md)+ \
+#	.000781*sin($md-3*$f)+.00067*sin($f+4*$de-2*$md)]
+# set g [expr $g+.000606*sin(2*$de-3*$f)+.000597*sin(2*($de+$md)-$f)+ \
+#	$e*.000492*sin(2*$de+$md-$ms-$f)+.00045*sin(2*($md-$de)-$f)+ \
+#	.000439*sin(3*$md-$f)+.000423*sin($f+2*($de+$md))+ \
+#	.000422*sin(2*$de-$f-3*$md)-$e*.000367*sin($ms+$f+2*$de-$md)- \
+#	$e*.000353*sin($ms+$f+2*$de)+.000331*sin($f+4*$de)]
+# set g [expr $g+$e*.000317*sin(2*$de+$f-$ms+$md)+$e2*.000306*sin(2*($de-$ms)-$f)- \
+#	.000283*sin($md+3*$f)]
+  set w1 [expr .0004664*cos($n)]
+  set w2 [expr .0000754*cos($c)]
+  set bet [expr $degrad*$g*(1-$w1-$w2)]
+
+  set hp [expr .950724+.051818*cos($md)+.009531*cos(2*$de-$md)+.007843*cos(2*$de)+ \
+	.002824*cos(2*$md)+.000857*cos(2*$de+$md)+$e*.000533*cos(2*$de-$ms)+ \
+	$e*.000401*cos(2*$de-$md-$ms)+$e*.00032*cos($md-$ms)-.000271*cos($de)- \
+	$e*.000264*cos($ms+$md)-.000198*cos(2*$f-$md)]
+# set hp [expr $hp+.000173*cos(3*$md)+.000167*cos(4*$de-$md)-$e*.000111*cos($ms)+ \
+#	.000103*cos(4*$de-2*$md)-.000084*cos(2*$md-2*$de)- \
+#	$e*.000083*cos(2*$de+$ms)+.000079*cos(2*$de+2*$md)+.000072*cos(4*$de)+ \
+#	$e*.000064*cos(2*$de-$ms+$md)-$e*.000063*cos(2*$de+$ms-$md)+ \
+#	$e*.000041*cos($ms+$de)]
+# set hp [expr *$hp+$e*.000035*cos(2*$md-$ms)-.000033*cos(3*$md-2*$de)- \
+#	.00003*cos($md+$de)-.000029*cos(2*($f-$de))-$e*.000029*cos(2*$md+$ms)+ \
+#	$e2*.000026*cos(2*($de-$ms))-.000023*cos(2*($f-$de)+$md)+ \
+#	$e*.000019*cos(4*$de-$ms-$md)]
+  set hp [expr $degrad*$hp]
+  set R [expr $Orr(km)*6378.14/sin($hp)]
+
+  # Return ecliptic X,Y,Z coordinates as offset from Earth.
+  # (with respect epoch of date; really need to precess to our std. epoch 2000.0.]
+  # Crude correction for precession: longitude increases with time,
+  # 360 degrees per 25770 years or 1.39697 degrees/century.
+  set lam [expr $lam + $degrad*1.39697*$t]
+  list [expr $R*cos($lam)*cos($bet)] [expr $R*sin($lam)*cos($bet)] [expr $R*sin($bet)]
+}
+
+# Search "body"'s tabulated ephemeris for date "now"; returns interpolated value.
+proc ephemsearch {now body} {
+  global Orr
+  upvar \#0 $Orr(ephem,$body) name
+  set max $name(max)
+  set i0 0
+  set i1 $max
+  set v0 $name($i0); set t0 [lindex $v0 0]
+  set v1 $name($i1); set t1 [lindex $v1 0]
+  # Secant search
+  while {$i1 - $i0 > 1 && $t1 > $t0} {
+	set i2 [expr $i0 + int(($t-$t0+0.)*($i1-$i0)/($t1-$t0))];
+	if {$i2 <= $i0} {
+		set i2 [expr $i0+1]
+	} elseif {$i2 >= $i1} {
+		set i2 [expr $i1-1]
+	}
+	set v2 $name($i2); set t2 [lindex $v2 0]
+	if {$t < $t2} {
+		set i1 $i2; set v1 $v2; set t1 $t2
+	} elseif {$t > $t2} {
+		set i0 $i2; set v0 $v2; set t0 $t2
+	} else {
+		return $v2
+	}
+  }
+  # Linear interpolation between i0 and i1.
+  set frac [expr $t1>$t0 ? ($t-$t0)/($t1-$t0) : 0]
+  set frac [expr $frac<0 ? 0 : $frac>1 ? 1 : $frac]
+  svsadd $frac $v1 [expr 1-$frac] $v0
+}
+
+# Returns 4x4 matrix to position "body".
+proc placebody {now body {turn ""} {shift ""}} {
+  global elem phys place Orr fastdraw ephem
+  global pi
+
+  # Validate user-entered parameter.
+  if {[catch {expr 1*$Orr(swell)}]} {
+	set Orr(swell) 1000
+  }
+  #unpack $elem($body) center a e i node peri anom motion Torbit
+  if {![info exists elem($body)]} {
+    if {[info exists ephem($body)]} {
+	set posn [ephemsearch $now $body]
+    } elseif {[string match {*.L[1-5]} $body]} {
+	set posn [getplace $now $body]
+    } else {
+	msg "Unknown body $body"
+	return [fourmatrix]
+    }
+  }
+  set ele $elem($body)
+  set center [lindex $ele 0]
+
+  if {[info exists ephem($body)]} {
+	
+  } elseif {$body == "Moon" && $Orr(finemoon)} {
+	set posn [placeMoon $now]
+  } else {
+	set a [lindex $ele 1]
+	set e [lindex $ele 2]
+	set Torbit [lindex $ele 8]
+	# Get true anomaly angle, in radians
+	set meananom [expr [lindex $ele 6] + ([lindex $ele 7]*$now)]
+	set trueanom [trueanomradians $meananom $e]
+#if {[string compare $body Earth]==0 || [string compare $body Jupiter]==0} {
+#  global date
+#  puts stderr [format "%10s anom %-9.2f mean %-9.2f days %-6.2f motion %.2f" $body [expr $trueanom*180/$pi] [expr $anom + ($motion*$now)] $now $motion]
+#}
+
+	set orbx [lrange $Torbit 0 2]
+	set orby [lrange $Torbit 3 5]
+	set sr [expr $a*(1-$e*$e)/(1 + $e*cos($trueanom))]
+	set sc [expr $sr*cos($trueanom)]
+	set ss [expr $sr*sin($trueanom)]
+	set posn [svsadd $sc $orbx $ss $orby]
+  }
+
+  if {[string compare $center Sun]} {
+	catch { set posn [vsadd $posn  1 [lrange $Orr(place,$center) 12 14]] }
+  } elseif {$shift != ""} {
+	set posn [vsadd $posn 1 $shift]
+  }
+
+  #unpack $phys($body) r ob rate gm orient
+  set r [lindex $phys($body) 0]
+  set rswell [expr $r*$Orr(swell)]
+  if {[info exists fastdraw($body)] && $fastdraw($body)} {
+	return "$rswell 0 0 0 0 $rswell 0 0 0 0 $rswell 0 $posn 1"
+  }
+
+  set ob [lindex $phys($body) 1]
+  set rate [lindex $phys($body) 2]
+  set orient [lindex $phys($body) 4]
+  set turns [expr 2*$pi*$now*$rate]
+  set sc [expr cos($turns)*$rswell]
+  set ss [expr sin($turns)*$rswell]
+  set mss [expr -$ss]
+  set ballx [lrange $orient 0 2]
+  set bally [lrange $orient 3 5]
+  set ballz [lrange $orient 6 8]
+  if {$turn != ""} {
+	set balltfm [concat \
+		[vsadd [svmul $sc $ballx] $ss $bally] \
+		[vsadd [svmul $mss $ballx] $sc $bally]	\
+		[svmul [expr $rswell/(1+2*$ob)] $ballz]]
+	fourmatrix [mmmul $balltfm $turn] [vmmul $posn $turn]
+  } else {
+	concat [svsadd $sc $ballx $ss $bally]	0 \
+		[svsadd $mss $ballx $sc $bally]	0 \
+		[svmul [expr $rswell/(1+2*$ob)] $ballz]	0 \
+		$posn					1
+  }
+}
+
+
+# Newton's-method search for inverse of the mean-anomaly function:
+#							  sqrt(1-e^2) e sin true
+#  meananom = 2*arctan( sqrt((1-e)/(1+e)) * tan(true/2) ) - -------------------
+#			                                     (1+e cos true)
+# whose derivative is
+#  d(mean)/d(true) = 1/(1 + e cos(true))^2
+# Mean anomaly is time (fraction of period times 2 pi) since periapsis;
+# true anomaly is angle (here in radians) since periapsis.
+
+proc trueanomradians {meananom e} {
+  global pi
+  set m [expr ($meananom/360.0) - int($meananom/360.0)]
+  if {$m < -.5} {
+	set m [expr $m+1]
+  } elseif {$m > 0.5} {
+	set m [expr $m-1]
+  }
+  if {$m < 0} {set mmin -$pi; set mmax 0
+  } else {set mmin 0; set mmax $pi
+  }
+  set m0 [expr $m*2*$pi]
+  set s [expr sqrt((1-$e)/(1+$e))]
+  set e2 [expr 1-$e*$e]
+  set d [expr sqrt($e2)]
+  set e32 [expr $d*$e2]
+
+  set t $m0
+  set eps .000000001
+  for {set lim 0} {$lim < 20} {incr lim} {
+	set r [expr 1+$e*cos($t)]
+	set delta [expr ($m0 - (2*atan($s*tan(.5*$t)) - ($d*$e*sin($t)/$r)))*$r*$r/$e32]
+	set t [expr $t+$delta]
+	if {abs($delta) < $eps} {
+	  break
+	}
+	if {$t < $mmin} {
+	  set t [expr ($t-$delta+$mmin)/2]
+	} elseif {$t > $mmax} {
+	  set t [expr ($t-$delta+$mmax)/2]
+	}
+  }
+  if {$lim >= 20} {
+      puts stderr "trueanom $meananom $e didn't converge! delta=$delta"
+  }
+  # puts stderr "trueanom $meananom $e = $t [expr $t*180/$pi]"
+  set t
+}
+
+proc unpack {list args} {
+  set i 0
+  foreach name $args {
+    upvar $name t
+    if {[llength $list] >= $i} {
+        set t [lindex $list $i]
+    } else {
+        set t 0
+    }
+    incr i
+  }
+}
+
+# Some routines we might define in C -- only use tcl code if they're
+# not already defined.
+catch {emodule_init orrery}
+proc orr_proc {name args body} {
+  if {[info commands $name] == ""} {
+    proc $name $args $body
+  }
+}
+
+# 3-Vector routines
+
+orr_proc vsadd {a s b} {
+  list \
+	[expr [lindex $a 0] + $s*[lindex $b 0]] \
+	[expr [lindex $a 1] + $s*[lindex $b 1]] \
+	[expr [lindex $a 2] + $s*[lindex $b 2]]
+}
+
+orr_proc svsadd {sa a sb b} {
+  list \
+	[expr $sa*[lindex $a 0] + $sb*[lindex $b 0]] \
+	[expr $sa*[lindex $a 1] + $sb*[lindex $b 1]] \
+	[expr $sa*[lindex $a 2] + $sb*[lindex $b 2]]
+}
+
+orr_proc svmul {s a} {
+  list \
+	[expr $s*[lindex $a 0]] \
+	[expr $s*[lindex $a 1]] \
+	[expr $s*[lindex $a 2]]
+}
+
+orr_proc vmmul {v M} {
+  set x [lindex $v 0]; set y [lindex $v 1]; set z [lindex $v 2]
+  list [expr $x*[lindex $M 0]+$y*[lindex $M 3]+$z*[lindex $M 6]] \
+	[expr $x*[lindex $M 1]+$y*[lindex $M 4]+$z*[lindex $M 7]] \
+	[expr $x*[lindex $M 2]+$y*[lindex $M 5]+$z*[lindex $M 8]]
+}
+
+orr_proc mmmul {A B} {
+  concat \
+	[vmmul [lrange $A 0 2] $B] \
+	[vmmul [lrange $A 3 5] $B] \
+	[vmmul [lrange $A 6 8] $B]
+}
+
+orr_proc cross {a b} {
+  set x0 [lindex $a 0]; set y0 [lindex $a 1]; set z0 [lindex $a 2]
+  set x1 [lindex $b 0]; set y1 [lindex $b 1]; set z1 [lindex $b 2]
+  list [expr $y0*$z1-$z0*$y1] [expr $z0*$x1-$x0*$z1] [expr $x0*$y1-$y0*$x1]
+}
+
+orr_proc dot {a b} {
+  return [expr [lindex $a 0]*[lindex $b 0] + [lindex $a 1]*[lindex $b 1] + [lindex $a 2]*[lindex $b 2]]
+}
+
+orr_proc mag {a} {
+  expr sqrt([dot $a $a])
+}
+
+orr_proc norm {a} {
+  set len [mag $a]
+  if {$len == 0} {
+	return "0 0 0"
+  }
+  svmul [expr 1/$len] $a
+}
+
+orr_proc orthog3 {xvec {zvec {0 0 1}}} {
+  set xv [norm $xvec]
+  if {$xv == "0 0 0"} {
+	set xv {1 0 0}
+  }
+  set zv [norm [vsadd $zvec [expr -[dot $xv $zvec]] $xv]]
+  if {$zv == "0 0 0"} {
+	if {abs([lindex $xv 1]) < abs([lindex $xv 2])} {
+	    set zv {0 1 0}
+	} else {
+	    set zv {0 0 1}
+	}
+	set zv [norm [vsadd $zv [expr -[dot $xv $zv]] $xv]]
+  }
+  concat $xv [norm [cross $zv $xv]] $zv
+}
+
+proc orthogZ {zvec yvec} {
+  set tfm [orthog3 $zvec $yvec]
+  # Reorder X Y Z into Z X Y
+  concat [lrange $tfm 3 5] [lrange $tfm 6 8] [lrange $tfm 0 2]
+}
+
+proc rotation {axis degrees} {
+  global pi
+  set rad [expr $degrees*$pi/180]
+  set c [expr cos($rad)]
+  set s [expr sin($rad)]
+  set ms [expr -$s]
+  if {$axis == "x"} {		list 1 0 0  0 $c $s  0 $ms $c
+  } elseif {$axis == "y"} {	list $c 0 $ms  0 1 0  $s 0 $c
+  } elseif {$axis == "z"} {	list $c $s 0  $ms $c 0  0 0 1
+  } else {
+	puts stderr "Can't rotate about axis $axis: must be 'x' or 'y' or 'z'"
+  }
+}
+
+proc transpose {T} {
+  set n [expr int(sqrt([llength $T]))]
+  for {set i 0} {$i < $n} {incr i} {
+    for {set j 0} {$j < $n} {incr j} {
+	lappend U [lindex $T [expr $i+($j*$n)]]
+    }
+  }
+  set U
+}
+
+proc threematrix {T} {
+  concat [lrange $T 0 2] [lrange $T 4 6] [lrange $T 8 10]
+}
+
+proc fourmatrix {{T ""} {trans ""}} {
+  if {$T != ""} {
+	if {$trans != ""} {
+	  concat [lrange $T 0 2] 0 [lrange $T 3 5] 0 [lrange $T 6 8] 0 $trans 1
+	} else {
+	  concat [lrange $T 0 2] 0 [lrange $T 3 5] 0 [lrange $T 6 8] 0 0 0 0 1
+	}
+  } else {
+	set tr $trans
+	if {$tr == ""} {set tr "0 0 0"}
+	concat 1 0 0 0 0 1 0 0 0 0 1 0 $tr 1
+  }
+}
+
+##############################################################
+
+proc initelem {} {
+  global Orr
+  set elfpath [findpath $Orr(elementfile)]
+  if {$elfpath == ""} {
+	msg "Orrery: couldn't find orbital-elements file $Orr(elementfile) on path $Orr(filepath)"
+	exit 1
+  }
+  set elf [open $elfpath]
+  inhaleelem $elf
+  close $elf
+}
+
+proc expandname {fname} {
+  switch -glob -- $fname {
+    ~* { glob -nocomplain $fname }
+    $* {
+	global env
+	set result ""
+	catch {
+	  regexp {\$([^/]+)(.*)} $fname junk envar rest
+	  set result "$env($envar)$rest"
+	}
+	set result
+       }
+    *  { set fname }
+  }
+}
+
+proc loadfilecache {cachename dirs} {
+  upvar $cachename cache
+  foreach dir $dirs {
+    set redir [expandname $dir]
+    if {$redir != ""} {
+      foreach file [glob -nocomplain $redir/*] {
+	set cache($file) 1
+      }
+    }
+  }
+}
+
+proc findpath {fname} {
+  global Orr Orr_filecache
+  if {[array size Orr_filecache] == 0} {
+    loadfilecache Orr_filecache $Orr(filepath)
+  }
+  set fbase [expandname $fname]
+  if {[string match */* $fbase]} {
+    if {[file exists $fbase]} {
+	return $fbase
+    }
+  }
+  foreach dir $Orr(filepath) {
+	set f [expandname "$dir/$fbase"]
+	if {[info exists Orr_filecache($f)]} {
+	  return $f
+	}
+  }
+  return ""
+}
+
+proc findpathall {pattern {refresh 0} {unique 1}} {
+  global Orr Orr_filecache
+  if {$refresh && [info exists Orr_filecache]} {unset Orr_filecache}
+  if {[array size Orr_filecache] == 0} {
+    loadfilecache Orr_filecache $Orr(filepath)
+  }
+  set result [glob -nocomplain $pattern]  ;# include "." in path.
+  foreach file [concat $result [array names Orr_filecache *$pattern]] {
+    set tail [file tail $file]
+    if {[string match $pattern $tail] && ![info exists seen($tail)]} {
+	lappend result $file
+	if {$unique} {set seen($tail) $file}
+    }
+  }
+  if {$unique} {
+    set result {}
+    foreach tail [lsort [array names seen]] {
+	lappend result $seen($tail)
+    }
+    set result
+  } else {
+    lsort $result
+  }
+}
+
+proc packgroup {opts also} {
+  set stuff {}
+  set beware [expr [winfo depth .]==2]	;# Mouse-X (for NeXT) with server bug!
+  for {set i 0} {$i < [llength $opts]} {incr i} {
+	set this [lindex $opts $i]
+	if {[string match .* $this]} {
+	  if {$beware && [winfo class $this]=="Button" && [$this cget -relief]!="flat"} {
+	    global Orr_repair
+	    append Orr_repair "$this config -relief [$this cget -relief];"
+	    $this config -relief flat
+	  }
+	  if {$stuff != ""} {
+		eval pack $stuff $also
+	  }
+	  set stuff $this
+	} else {
+	  lappend stuff $this [lindex $opts [incr i]]
+	}
+  }
+  if {$stuff != ""} {
+	eval pack $stuff $also
+  }
+}
+
+proc initui {needgui} {
+  global tk_version Orr
+
+  if {!$needgui || ![info exists tk_version]} {
+	set Orr(closedloop) 0
+	proc frame args {}
+	proc label args {}
+	proc entry args {}
+	proc scale args {}
+	proc button args {}
+	proc bind args {}
+	proc pack args {}
+	proc update args {}
+	proc menu args {}
+	proc .bodymenu args {}
+	proc .view1.sswell args {return 1}
+	return
+  }
+
+  wm title . "Orrery $Orr(version) -- The Geometry Center"
+
+  lappend rows [frame .top]
+  set em {}
+
+  set stuff "-bd 3 -padx 3 -pady 3 -relief raised"
+  lappend em [eval button .top.load $stuff -command {do_load} -text "Load"]
+  lappend em [eval button .top.save $stuff -command {do_save} -text "Save"]
+  lappend em [eval button .top.help $stuff -command {do_help} -text "Help"]
+  packgroup $em {-side left -fill y}
+  pack .top.help -side right
+
+  set em {}
+  lappend rows [frame .cam]
+  lappend em [frame .cam.fcam -relief ridge -bd 3]
+  pack [label .cam.fcam.lcam -text "Camera"] \
+	[entry .cam.fcam.ecam -width 8 \
+		-textvariable Orr(trackcam) -relief sunken] -fill x -expand 1
+  lappend em [frame .cam.fmov -relief ridge -bd 3]
+  pack [label .cam.fmov.lmov -text "Move with"] \
+	[entry .cam.fmov.emov -width 10 \
+		-textvariable Orr(followobj) -relief sunken] -fill x -expand 1
+  lappend em [frame .cam.flook -relief ridge -bd 3]
+  pack [label .cam.flook.llook -text "Look toward"] \
+	[entry .cam.flook.elook -width 10 \
+		-textvariable Orr(watchobj) -relief sunken] -fill x -expand 1
+  bind .cam.flook.elook <Return> {doupdate}
+  packgroup $em {-side left -fill x -expand 1}
+
+  lappend rows [frame .fix]
+  unset em
+  lappend em [frame .fix.cen -relief ridge -bd 3]
+  pack [label .fix.cen.lcen -text "Fix Object"] \
+	[entry .fix.cen.ecen -width 8 \
+		-textvariable Orr(fixobj) -relief sunken] -fill x -expand 1
+  lappend em [frame .fix.dir -relief ridge -bd 3]
+  pack [label .fix.dir.ldir -text "Fix Direction To"] \
+	[entry .fix.dir.edir -width 8 \
+		-textvariable Orr(fixdir) -relief sunken] -fill x -expand 1
+  packgroup $em {-side left -fill x -expand 1}
+
+  lappend rows [frame .speed] -pady 7
+  unset em
+  lappend em [scale .speed.sdps \
+	-from -1 -to 4.5 -resolution .083333 -showvalue 0 -orient horizontal \
+	-command {logtrack Orr(dps) .speed.sdps 1}]
+  lappend em [label .speed.ldps -text "days/sec" -relief raised]
+  bind .speed.ldps <Button> {toggledays %W}
+  lappend em [entry .speed.edps -textvariable Orr(dps) -width 8 -relief sunken] -fill x -expand 1
+  bind .speed.edps <Return> {logtrack Orr(dps) .speed.sdps 0}
+  packgroup $em {-side left -anchor w}
+
+  lappend rows [frame .date]
+  unset em
+  lappend em [button .date.run -bitmap "@[findpath run.xbm]" -relief raised -bd 3 -command {toggle .date.run run}]
+  lappend em [button .date.backstep -bitmap "@[findpath backstep.xbm]" \
+	-relief raised -bd 3 \
+	-command {stepby -1}]
+  lappend em [button .date.step -bitmap "@[findpath step.xbm]" -relief raised \
+	-bd 3 \
+	-command {stepby 1}]
+  bind .date.step <Button-2> {stepby .1}
+  bind .date.step <Button-3> {stepby 10}
+  bind .date.backstep <Button-2> {stepby -.1}
+  bind .date.backstep <Button-3> {stepby -10}
+  lappend em [label .date.l -text "UT Date"]
+  lappend em [entry .date.date -textvariable Orr(date) -width 14 -relief sunken] -fill x -expand 1
+  bind .date.date <Return> {set Orr(now) [str2date $Orr(date)]; set Orr(date) [date2str $Orr(now)]; doupdate}
+  packgroup $em {-side left -anchor w}
+
+
+  set bgvu $Orr(selbg)
+
+  lappend rows [frame .gap1 -relief groove -bd 3 -height 3] -pady 3
+
+  lappend rows [label .viewlabel -text "View" -back $bgvu]
+
+  lappend rows [frame .viewb -back $bgvu -bd 3]
+  unset em
+  lappend em [button .viewb.stars -text Stars -back $bgvu -highlightback $bgvu \
+		-relief raised]
+  bind .viewb.stars <Button-1> do_stars
+bind .viewb.stars <ButtonRelease-1> {puts stderr "Release %W"}
+  lappend em [button .viewb.orbits -text Orbits -back $bgvu -highlightback $bgvu \
+		-command {toggle .viewb.orbits orbits} -relief raised]
+  lappend em [button .viewb.eqgrid -text {Eq.Grid} -back $bgvu -highlightback $bgvu \
+		-command {toggle .viewb.eqgrid eqgrid} -relief raised]
+  lappend em [button .viewb.textures -text Display... -back $bgvu -highlightback $bgvu \
+		-command {apcanvas} -relief raised]
+  packgroup $em {-side left -anchor w -fill x -expand 1}
+
+  lappend rows [frame .view1 -back $bgvu -highlightbackground $bgvu -bd 3]
+  lappend em [scale .view1.sswell \
+	-from 0 -to 5 -resolution .083333 -showvalue 0 -orient horizontal \
+	-back $bgvu -highlightback $bgvu \
+	-command {logtrack Orr(swell) .view1.sswell 1; doupdate}] -fill x -expand 1
+  lappend em [label .view1.lswell -text "Swell" -back $bgvu]
+  lappend em [entry .view1.eswell -textvariable Orr(swell) -back $bgvu -highlightback $bgvu -width 8 -relief sunken] -fill x -expand 1
+  bind .view1.eswell <Return> {logtrack Orr(swell) .view1.sswell 0; doupdate}
+  packgroup $em {-side left -anchor w}
+
+  # Secret debugging panel opens by double-clicking on "Swell" label.
+  proc debugtoggle {} {
+	if {[catch {pack info .debug}]} {
+	  pack .debug -after .view1 -side top -fill both -expand 1
+	  focus .debug
+	} else {
+	  pack forget .debug
+	}
+  }
+
+  bind .view1.lswell <Double-1> {debugtoggle}
+
+  entry .debug -relief sunken -textvariable debugcmd -bd 3
+  bind .debug <Return> {msg [eval $debugcmd]; .debug select from 0; .debug select to end}
+
+  label .botmsg -anchor w -justify left
+  pack .botmsg -fill both -expand 1 -side bottom
+
+  bind .botmsg <Double-1> {debugtoggle}
+
+  packgroup $rows {-side top -anchor w -fill both -expand 1}
+
+  foreach ent {.cam.fmov.emov .cam.flook.elook .fix.cen.ecen .fix.dir.edir} {
+	bind $ent <Button-3> {set Orr(stuffbodyin) %W; .bodymenu post %X %Y; set tkPriv(window) .bodymenu; grab .bodymenu}
+  }
+  menu .bodymenu
+  .bodymenu add command -label "<none>" -command {stuffbody ""}
+  bind Scale <Button-2> [concat {%W set [%W get %x %y];} [bind Scale <Button-2>]]
+
+  catch {tk_bisque}
+}
+
+proc stuffbody {name} {
+  global Orr
+  grab release .bodymenu
+  set var [$Orr(stuffbodyin) cget -textvariable]
+  upvar \#0 $var enttext
+  set enttext $name
+  if {! $Orr(running)} {
+    doupdate
+  }
+}
+
+proc stepby {unit} {
+  global Orr
+  stop
+  catch {set Orr(now) [expr $Orr(now)+($unit*$Orr(dps))]}
+  doupdate
+}
+
+
+proc logtrack {varname scale scalechanged {junk 0}} {
+  upvar \#0 $varname var
+  set sign [expr $var < 0 ? -1 : 1]
+  if {$scalechanged} {
+	set log [$scale get]
+	set v [expr $sign*pow(10,$log)]
+	set var [format %.2g $v]
+	# Fix up to behave as %.2g ought to: 2500 or .0025 not 2.5e+02 or e-04
+	if {[string match {*[eE]*} $var]} {
+	    if {$log < 0} {
+		set var [format %.[expr 1-int($log)]f $v]
+	    } else {
+		regexp {(-?[1-9][0-9])([0-9]*)} [format %.0f $v] junk first rest
+		regsub -all {[0-9]} $rest {0} trail
+		set var $first$trail
+	    }
+	}
+  } else {
+	set cmd [$scale cget -command]
+	$scale configure -command {}
+	$scale set [expr $var==0 ? [$scale cget -from] : log(abs($var))/log(10)]
+	update
+	$scale configure -command $cmd
+  }
+}
+
+proc toggledays {win} {
+  switch [$win cget -text] {
+    days/sec { $win configure -text days/tick }
+    default { $win configure -text days/sec }
+  }
+}
+
+proc toggle {win {func {}}} {
+  set turnon [expr [string compare [$win cget -relief] sunken]!=0]
+  $win configure -relief [lindex {raised sunken} $turnon]
+  if {$func != ""} {
+	eval $func $turnon
+  }
+}
+
+proc ap_AllFirst {a b} {
+  set delta [expr ([string match *All* $a]>=0) - ([string match *All* $b]>=0)]
+  if {$delta != 0} {
+    set delta
+  } else {
+    string compare $a $b
+  }
+}
+
+proc ap_apply {} {
+  global Orr elem
+  set todo {}
+  set visopts {{*-face *-edge} {*-face *+edge} {*+face *-edge *-texturing} {*+face *-edge *+texturing}}
+  set changeorbits -1; set relabel 0
+  foreach key [lsort -command ap_AllFirst [array names Orr aptog*]] {
+    scan $key {aptog %s %s} cmd body
+    set was [$cmd $body]
+    if {$was != $Orr($key) && $body != "All"} {
+      switch $cmd {
+	showorbit { set changeorbits $Orr($key) }
+	labeled   { set relabel 1 }
+	visible {
+	  append todo "(merge-ap $body {[lindex $visopts $Orr($key)]})"
+	  if {![info exists wasvis($body)]} {
+		set wasvis($body) $was
+	  }
+	}
+      }
+      $cmd $body $Orr($key); unset Orr($key)
+    }
+  }
+  if {$todo != "" || $changeorbits>=0 || $relabel} {
+    gvbegin
+    if {$changeorbits>=0} {
+	loadorbits
+	if {$changeorbits>0 && $Orr(orbits)==0} {
+	  orbits 1
+	}
+    }
+    foreach body [array names wasvis] {
+	set isvis [expr [visible $body]!=0]
+	if {($wasvis($body)!=0) != $isvis} {
+	  set pickable $isvis
+	  if {$Orr(watchobj) != ""} {
+	    switch $Orr(followobj)	\
+		$body -			\
+		[lindex $elem($body) 0] { set pickable 0 }
+	  }
+	  puts "(pickable $body [lindex {no yes} $pickable])"
+	}
+    }
+    if {$relabel} {
+	tick
+    }
+    puts "$todo"
+    gvend
+    gvflush
+  }
+  catch {.ap.acts.apply configure -background [.ap.acts cget -background]}
+}
+
+proc picked {s} {
+  global Orr elem
+  regsub -all {\(} $s "\{" s
+  regsub -all {\)} $s "\}" s
+  set s [lindex $s 0]
+  set body [lindex $s 2]
+  if {[info exists elem($body)]} {
+    set at [lrange [placebody $Orr(now) [lindex $s 2]] 12 14]
+    if {[info commands .ap.c.c] != ""} {
+	ap_clearall
+	ap_showsel b_$body 1
+	ap_view all
+    }
+  } else {
+    unpack [lindex $s 3] x y z w
+    set at [list [expr $x/$w] [expr $y/$w] [expr $z/$w]]
+  }
+  unpack [equ $at [placebody $Orr(now) Earth]] r ra dec
+
+  msg [format "%s  From Earth: %.7g AU\nat RA %s Dec %s" [lindex $s 2] $r $ra $dec]
+}
+
+proc apopts {value} {
+  global Orr
+  switch -- $value {
+    0 {concat -relief raised -background [.ap.c.c cget -background]}
+    1 {concat -relief sunken -background $Orr(selbg)}
+  }
+}
+
+proc aptoggler {body stem tag value} {
+  global Orr
+
+  switch -glob $tag {
+   vis.* {
+	set cmd visible
+	scan $tag vis.%d value
+	set them {0 1 2 3}
+	set yes [apopts 1]
+	set no [apopts 0]
+	if {![texturable $body]} {
+	  set them {0 1 2}
+	  if {$value == 3} {set value 2}
+	}
+	foreach i $them {
+	  eval $stem.b_$body.vis.$i configure [expr $value==$i ? {$yes} : {$no}]
+	}
+      }
+   lb	{set cmd labeled; eval $stem.b_$body.$tag configure [apopts $value]}
+   orb	{set cmd showorbit; eval $stem.b_$body.$tag configure [apopts $value]}
+  }
+  set "Orr(aptog $cmd $body)" $value
+}
+
+proc aptoggle {bname} {
+  global Orr
+
+  set newstate [string match raised [$bname cget -relief]]
+  set newrelief [lindex {raised sunken} $newstate]
+  regexp {(.*)\.b_([^.]+)\.(.+)$} $bname junk stem body tag
+  aptoggler $body $stem $tag $newstate
+  if {$stem == ".ap"} {set stem .ap.c.c}
+  if {"$body" == "All"} {
+    catch {forallbodies aptoggler $stem $tag $newstate}
+  }
+
+  catch {.ap.acts.apply configure -background $Orr(selbg)}
+}
+
+proc activeLabel {args} {
+  set l [eval label $args]
+  bindtags $l [list $l activeLabelTag Label . all]
+  set l
+}
+
+proc disabledLabel {args} {
+  set l [eval label $args]
+  $l configure -foreground [$l cget -background]
+  set l
+}
+
+proc selectLabel {args} {
+  set l [eval label $args]
+  bindtags $l [list $l selectLabelTag Label . all]
+  set l
+}
+
+bind activeLabelTag <Button-1>		{aptoggle %W; ap_apply}
+bind activeLabelTag <Shift-Button-1>	{aptoggle %W}
+bind activeLabelTag <Button-2>		{aptoggle %W}
+bind activeLabelTag <Button-3>		{aptoggle %W}
+
+proc apline {c body level} {
+  set b $c.b_$body
+  frame $b
+
+  set orb [showorbit $body]
+  lappend line [eval activeLabel $b.orb -bitmap @[findpath orbit.xbm] -bd 3 [apopts $orb]]
+
+  set lb [labeled $body]
+  lappend line [eval activeLabel $b.lb -text L -bd 3 [apopts $lb]]
+
+  set bv [frame $b.vis]
+  set yes [apopts 1]
+  set no [apopts 0]
+  set v [visible $body]
+  lappend bvg [eval activeLabel $bv.0 -bitmap error -bd 3 [expr $v==0 ? {$yes} : {$no}]]
+  lappend bvg [eval activeLabel $bv.1 -bitmap @[findpath wire.xbm] -bd 3 [expr $v==1 ? {$yes} : {$no}]]
+  lappend bvg [eval activeLabel $bv.2 -bitmap @[findpath vis.xbm] -bd 3 [expr $v==2 ? {$yes} : {$no}]]
+  set lcode "disabledLabel $bv.3"
+  if {[texturable $body]} {
+    set lcode "activeLabel $bv.3 [expr $v==3 ? {$yes} : {$no}]"
+  }
+  lappend bvg [eval $lcode -bitmap @[findpath texture.xbm] -bd 3]
+
+  packgroup $bvg {-side left -ipadx 2 -fill y -pady 2}
+  lappend line $bv
+
+  set fmt [format {%%%ds} [expr $level*3 + [string length $body]]]
+  lappend line [label $b.name -text [format $fmt $body]]
+  packgroup $line {-side left -fill y -ipadx 4 -pady 2}
+  pack configure $b.lb -padx 12
+  set b
+}
+
+proc ap_clearall {} {
+  global Orrsel
+  if {[info exists Orrsel]} {
+    ap_showsel [array names Orrsel b_*] 0
+    unset Orrsel
+  } 
+} 
+
+proc ap_showsel {Bbodies selected} {
+  global Orr Orrsel
+  set base .ap.c.c
+  if {$selected == "toggle"} {
+    foreach Bbody $Bbodies {
+	ap_showsel $Bbody [expr ![info exists Orrsel($Bbody)]]
+    }
+    return
+  }
+
+  set bg [lindex [list [$base cget -background] $Orr(selbg)] $selected]
+  foreach Bbody $Bbodies {
+    $base.$Bbody.name conf -background $bg
+    if {$selected} {
+	set Orrsel($Bbody) $selected
+    } else {
+	unset Orrsel($Bbody)
+    }
+  }
+  set sel [array names Orrsel b_*]
+  if {$sel != "" && $sel != "b_All"} {
+    .ap.b_All.name config -text Selected
+  } else {
+    .ap.b_All.name config -text All
+  }
+}
+
+proc ap_view {Bbodies} {
+  global Orrsel
+  set base .ap.c.c
+  if {"[info commands $base]" == ""} {
+    return
+  }
+  if {$Bbodies == "all"} {
+    set Bbodies [array names Orrsel b_*]
+  }
+  $base dtag wanted
+  foreach bbody $Bbodies {
+    $base addtag wanted withtag $bbody
+  }
+  unpack [$base bbox wanted] junk needy0 junk needy1
+  set y0 [$base canvasy [winfo y $base]]
+  set high [winfo height $base]
+  unpack [$base cget -scrollregion] junk sy0 junk sy1
+  if {$needy0 < $y0} {
+    $base yview moveto [expr double($needy0-$sy0)/($sy1-$sy0)]
+  } elseif {$needy1 > $y0 + $high} {
+    $base yview moveto [expr double($needy1-$high-$sy0)/($sy1-$sy0)]
+  }
+}
+
+proc min {a b} {
+  expr $a<$b ? $a : $b
+}
+proc max {a b} {
+  expr $a>$b ? $a : $b
+}
+
+proc ap_sel {rootx rooty op} {
+  global Orr Orrsel
+  set w [winfo containing $rootx $rooty]
+  set base .ap.c.c
+  if {$op == "done" && [info commands .ap] != ""} {
+    apscroll $base 0 0 0
+    return
+  }
+  set cx [$base canvasx [expr $rootx-[winfo rootx $base]]]
+  set cy [$base canvasy [expr $rooty-[winfo rooty $base]]]
+  set val 1
+  switch $op {
+    set {
+	if {[string match $base* $w] && [info exists Orrsel]} {
+	  ap_showsel [array names Orrsel b_*] 0
+	  unset Orrsel
+	}
+	set Orrsel(x0) $cx
+	set Orrsel(y0) $cy
+	set Orrsel(w0) $w
+    }
+    toggle {
+	# start with clean slate (expect future "scan" events).
+	if {[string match $base* $w]} {
+	  foreach was [array names Orrsel was,*] {
+	    unset Orrsel($was)
+	  }
+	}
+	set Orrsel(x0) $cx
+	set Orrsel(y0) $cy
+	set Orrsel(w0) $w
+    }
+    scroll -
+      scan {
+	if {[info exists Orrsel(w0)]} {set w $Orrsel(w0)}
+      }
+    done {
+	if {[info exists Orrsel(w0)]} {unset Orrsel(w0)}
+    }
+  }
+
+  if {![string match $base* $w]} {
+    apscroll $base 0 0 0
+    return
+  }
+
+  set sel [$base find overlapping \
+		[min $cx $Orrsel(x0)] [min $cy $Orrsel(y0)] \
+		[max $cx $Orrsel(x0)] [max $cy $Orrsel(y0)]]
+
+  # Find changed items: selected now & not before...
+  foreach id $sel {
+    if {[$base type $id] == "window" &&
+		[scan [$base itemcget $id -window] $base.%s Bbody]} {
+      set issel($Bbody) 1
+      if {![info exists Orrsel(was,$Bbody)]} {
+	ap_showsel $Bbody toggle
+	set Orrsel(was,$Bbody) 1
+      }
+    }
+  }
+  # Before and not now...
+  foreach was [array names Orrsel was,*] {
+    scan $was was,%s Bbody
+    if {![info exists issel($Bbody)]} {
+      ap_showsel $Bbody toggle
+      unset Orrsel(was,$Bbody)
+    }
+  }
+  set y0 [winfo rooty .ap.c.c]
+  if {[set dy [expr $y0+10 - $rooty]] > 0} {
+    apscroll $base -1 150 $op
+  } elseif {[set dy [expr $rooty - ($y0+[winfo height .ap.c.c]-10)]] > 0} {
+    apscroll $base 1 150 $op
+  } else {
+    apscroll $base 0 0 0
+  }
+}
+
+proc apscrollagain {can dy} {
+  global Orrsel
+  if {[info exists Orrsel(scroll_sched)]} {unset Orrsel(scroll_sched)}
+  $can yview scroll $dy units
+  update
+  ap_sel [winfo pointerx $can] [winfo pointery $can] scroll
+}
+
+proc apscroll {can dy rate op} {
+  global Orrsel
+  if {$dy != 0 && ![info exists Orrsel(scroll_sched)]} {
+    set Orrsel(scroll_sched) [after $rate apscrollagain $can $dy]
+  }
+  if {$rate == 0 && [info exists Orrsel(scroll_sched)]} {
+    after cancel $Orrsel(scroll_sched)
+    unset Orrsel(scroll_sched)
+  }
+}
+
+proc bitlabel {base bitmap text} {
+  frame $base
+  lappend fl [label $base.bit -bitmap $bitmap]
+  lappend fl [label $base.txt -text $text]
+  packgroup $fl {-side left}
+  set base
+}
+
+proc apcanvas {} {
+  global Orr elem Orrsel
+
+  # Could be more efficient, but let's just start over if we've done this before.
+  if {[info commands .ap] != ""} {
+    destroy .ap
+  }
+  if {[info exists Orrsel]} {
+    unset Orrsel
+  }
+
+  . configure -cursor watch; update
+  set bgc [. cget -background]
+
+  set Orr(ap) {}
+  set w [toplevel .ap -background $bgc]
+  wm withdraw $w
+  wm title $w "Display..."
+
+  set wlbl [bitlabel $w.leg2 @[findpath orbit.xbm] {Orbit   }]
+  lappend wline [bitlabel $wlbl.lb @[findpath label.xbm] "Labels ("]
+  lappend wline [entry $wlbl.lsize -textvariable Orr(labelsize) -relief sunken -width 5]
+  bind $wlbl.lsize <Return> {tick}
+  lappend wline [label $wlbl.l2 -text "AU high)"]
+  packgroup $wline {-side left -fill x}
+  $wlbl configure -bd 4
+
+
+  set wh [frame $w.legend]
+  set whl1 [frame $wh.l1]
+  set whl2 [frame $wh.l2]
+  packgroup [list $whl1 $whl2] {-side left -expand 1 -fill x}
+
+  packgroup [list \
+		[bitlabel $whl1.no error Invisible] \
+		[bitlabel $whl1.wf @[findpath wire.xbm] Wireframe] \
+		[bitlabel $whl2.vis @[findpath vis.xbm] Ball] \
+		[bitlabel $whl2.tx @[findpath texture.xbm] Textured] \
+	    ] {-side top -padx 4 -expand 1 -fill x}
+  
+
+  packgroup [list $wlbl $wh] {-side top -expand 0 -fill x}
+
+  set wc [frame $w.c]
+
+  set c [canvas $wc.c -relief sunken -bd 2 \
+	-yscrollcommand "$wc.vscroll set" -background $bgc]
+
+  scrollbar $wc.vscroll -command "$c yview" -background $bgc
+  pack $wc.vscroll -side right -fill y
+
+  pack $c -expand 1 -fill both
+
+  # Leave "All" line separate: don't let it scroll off the canvas.
+  set wall [apline $w All 0]
+  pack $wall -side top -expand 0 -fill x -padx [$c cget -bd]
+
+  set y 0
+  foreach body $Orr(allbods) {
+    set indent 0
+    if {$body != "Sun"} {
+	set indent [expr [string match "Sun" [lindex $elem($body) 0]] ? 0 : 1]
+    }
+    set bline [apline $c $body $indent]
+    $c create window 0 $y -window $bline -anchor nw -tags b_$body
+    if {$y == 0} {
+	update
+	set dy [winfo reqheight $bline]
+    }
+    incr y $dy
+    lappend lines $bline
+  }
+
+
+  set acts [frame $w.acts]
+  packgroup [button $acts.accept -text OK \
+	-command "eval ap_apply\; after 0 destroy $w"] {-side left}
+  packgroup [button $acts.apply -text Apply -command {ap_apply}] \
+    {-side left -expand 1}
+  packgroup [button $acts.cancel -text Cancel -command "after 0 destroy $w"] \
+    {-side right}
+
+  bind $w <Button>	  {ap_sel %X %Y set}
+  bind $w <Shift-Button>  {ap_sel %X %Y toggle}
+  bind $w <Button1-Motion> {ap_sel %X %Y scan}
+  bind $w <ButtonRelease> {ap_sel %X %Y done}
+
+  update
+  set x 0
+  foreach bline $lines {
+    set t [winfo reqwidth $bline]
+    if {$x<$t} {set x $t}
+  }
+
+  pack $acts -side bottom -fill x -expand 0
+  pack $wc -side top -fill both -expand 1 -pady 4
+
+  $c configure -scrollregion [list 0 0 $x $y] \
+		-width [expr $x+10] \
+		-yscrollincrement $dy
+  wm deiconify $w
+
+  . configure -cursor {}
+}
+
+
+# Handle responses from Geomview
+proc tock {} {
+  global Orr
+  if {[eof stdin]} {
+	exit
+  }
+
+  set s [string trimleft [gets stdin]]
+  set key ""
+  scan $s {%s %s} key tag
+  switch -- $key {
+    t= {
+	set newtime $tag
+	set Orr(awaitack) 0
+	if {$Orr(running)} {
+	  set persec [string match *sec* [.speed.ldps cget -text]]
+	  if {$Orr(acktime) >= 0 || !$persec} {
+		set dt [expr $newtime - $Orr(acktime)]
+		catch {set Orr(now) [expr $Orr(now) + ($persec ? $dt : 1)*$Orr(dps)]}
+	  }
+	  tick
+	} elseif {$Orr(needtick)} {
+	  tick
+	}
+	set Orr(acktime) $newtime
+    }
+    camera= {
+	set Orr(curcam) $tag
+	# Expect the rest of the camera now.
+	while {![info complete $s] && [gets stdin line] >= 0} {
+	  append s $line
+	  if {[scan $line {near %f} Orr(curclip,$Orr(curcam))] == 1} {
+	    catch {
+	      if {$Orr(needclip,$Orr(curcam)) < $Orr(curclip,$Orr(curcam))} {
+puts stderr "needtick"
+		    set Orr(needtick) 1
+	      }
+	    }
+	  }
+	}
+    }
+    (pick {
+	picked $s
+    }
+    "" {}
+    default {
+	puts stderr "got from geomview: $s"
+    }
+  }
+}
+
+proc doupdate {args} {
+  global Orr
+  if {!$Orr(awaitack)} {
+	tick
+  } else {
+	set Orr(needtick) 1
+	update
+  }
+}
+
+# bodyof X knows the syntax for special names, and returns the associated body.
+# Currently the only kind of special name is <bodyname>.L<n>
+# for the Lagrangian point Ln between bodyname and its parent.
+
+proc bodyof {obj} {
+   lindex [split $obj .] 0
+}
+
+# Does body "obj" exist, taking account of L-point suffixes etc.?
+# Not implemented (nor needed) yet.
+proc knownobj {obj} {
+   global elem
+   set body [regexp   XXX]
+}
+   
+
+# getplace also knows the syntax for special names.
+# Returns X Y Z in global coordinates.
+
+proc getplace {now obj} {
+  global elem phys
+  set b [split $obj .]
+  set body [lindex $b 0]
+  set parent [lindex $elem($body) 0]
+  if {$parent != "Sun"} {	; # Ensure up-to-date
+	placebody $now $parent
+  }
+  if {[llength $b] > 1} {
+	# Lagrangian point?  Need the (square root of the) mass ratio.
+	set mu [expr sqrt((0.+[lindex $phys($body) 3]) / [lindex $phys($parent) 3])]
+	set umu [expr 1-$mu]
+	set pparent [lrange [placebody $now $parent] 12 14]
+	set Tbody [placebody $now $body]
+	set pbody [lrange $Tbody 12 14]
+
+	# Our names for Lagrangian points are:
+	# L1 between body and primary	L2 beyond body  L3 180 degrees away
+	# L4 60 degrees forward along orbit	L5 60 degrees backward
+	switch [lindex $b 1] {
+	  L1 {svsadd $umu $pbody $mu $pparent}
+	  L2 {set q [svsadd $umu $pbody -$mu $pparent]}
+	  L3 {svsadd -1 $pbody 2 $pparent}
+	  default
+		{puts stderr "Can't handle .[lindex $b 1] (yet)";
+		 lrange $pbody 12 14
+		}
+	}
+  } else {
+    lrange [placebody $now $body] 12 14
+  }
+}
+
+proc tick {} {
+  global Orr
+  global elem phys place orbitsaround
+
+  set Orr(date) [date2str $Orr(now)]
+  update
+  if {$Orr(gvloaded) == 0} {
+	set Orr(needtick) 1
+	return
+  }
+  set Orr(needtick) 0
+
+  gvbegin
+
+  set shiftby ""
+  set turn ""
+
+  precess_moon $Orr(now)
+
+  set followbody [bodyof $Orr(followobj)]
+  set watchbody  [bodyof $Orr(watchobj)]
+  if {[catch {expr 1.0*$Orr(labelsize)}]} {
+    set Orr(labelsize) [lindex $Orr(lastlabelconf) 0]
+  }
+  set relabel [string compare $Orr(lastlabelconf) "$Orr(labelsize) $Orr(swell)"]
+
+  foreach body $Orr(allbods) {
+    set v [visible $body]
+    set o [info exists orbitsaround($body)]
+    set l [labeled $body]
+    if {$v || $o || $l || $body==$followbody || $body==$watchbody} {
+	set p [placebody $Orr(now) $body $turn $shiftby]
+	puts "(xform-set $body $p)"
+	if {$l && (![info exists Orr(label,$body)] || $relabel)} {
+
+	  # Plant label appropriately: at body+radius, if possible
+	  set lscl $Orr(labelsize)
+	  set rbody [expr ("$body"=="Sun")?0.1:$Orr(swell)*[lindex $phys($body) 0]]
+
+	  set loca {}; set originbugfix {}
+	  if {[gv_version origin]} {
+	    set loca "location camera  origin local 0 0 0"
+	    if {[gv_version originbug]} {
+		set originbugfix "\n{ appearance { *linewidth 2 }
+			VECT 1 1 1  1 1  0 0 0  1 1 1 1 }"
+	    }
+	  }
+
+	  puts "(geometry $body { LIST
+	    { < $Orr(model,$body) }\n$originbugfix
+	    { INST $loca
+		transform $lscl 0 0 0  0 $lscl 0 0  0 0 .001 0  $rbody 0 0 1
+		geom { appearance { material { edgecolor 1 1 1 } }"
+	  puts [vectext -align w -s 1 -plane xy -text $body]
+	  puts "}}  })"
+	  set Orr(label,$body) $Orr(swell)
+	} elseif {[info exists Orr(label,$body)] && !$l} {
+	  puts "(geometry $body { < $Orr(model,$body) })"
+	  unset Orr(label,$body)
+	}
+
+	set had [valueor Orr(hadtail,$body) {}]
+	set tail [tail $body]
+	if {[llength $tail] > 0} {
+	  if {![info exists Orr(hadtail,$body)]} {
+	    puts "(geometry $body.tail { < [findpath Tail] })"
+	    puts "(pickable $body.tail no)"
+	    set Orr(hadtail,$body) $tail
+	  }
+	  set at [vecfrom $p]
+	  set T [orthogZ [vecfrom $p] {0 0 1}]
+	  set rbody [expr [lindex $phys($body) 0]*$Orr(swell)]
+	  set long [lindex $tail 0]
+	  set wide [expr [llength $tail]>1 ? {[lindex $tail 1]} : .2*$long]
+	  set tfm [mmmul "$wide 0 0  0 $wide 0  0 0 $long" $T]
+	  puts "(xform-set $body.tail  [fourmatrix $tfm $at])"
+	} elseif {$tail != $had} {
+	  puts "(delete $body.tail)"
+	  unset Orr(hadtail,$body)
+	}
+
+	# Camera tracks object...
+	if {$body == $followbody \
+		&& "$Orr(trackcam)" != "" \
+		&& ![info exists Orr(place,$watchbody)] \
+		&& [info exists Orr(place,$body)]} {
+	    set shove [vecfrom $p $Orr(place,$body)]
+	    puts "(if (real-id \"$Orr(trackcam)\") (transform \"$Orr(trackcam)\" world world translate $shove))"
+	}
+	set Orr(place,$body) $p
+
+	if {$o} {
+	  puts "(hdefine transform $orbitsaround($body) [fourmatrix $turn [lrange $p 12 14]])"
+	}
+    } else {
+	puts "(xform-set $body .01 0 0 0  0 .01 0 0  0 0 .01 0  0 0 0 1)"
+    }
+  }
+  set Orr(lastlabelconf) "$Orr(labelsize) $Orr(swell)"
+
+  if {$Orr(orbits) < 0} {
+	set Orr(orbits) 1
+	puts "(geometry Orbits { appearance { material { edgecolor .5 .5 .5 }} { : allorbits }})"
+  }
+
+  set worldset 0
+  if {[info exists elem([bodyof $Orr(fixobj)])]} {
+	set shiftby [svmul -1 [getplace $Orr(now) $Orr(fixobj)]]
+	set sunat $shiftby
+	if {[info exists elem([bodyof $Orr(fixdir)])]} {
+	   set toxyz [vsadd [getplace $Orr(now) $Orr(fixdir)] 1 $shiftby]
+	   set turn [transpose [orthog3 $toxyz {0 0 1}]]
+	   set shiftby [vmmul $shiftby $turn]
+	}
+	puts "(xform-set World [fourmatrix $turn $shiftby])"
+	puts "(merge-baseap {lighting {replacelights light {position $shiftby 1}}})"
+	set worldset 1
+  }
+
+  # Position camera (if any)
+  if {$Orr(trackcam) != "" && [info exists Orr(place,$watchbody)]} {
+    if {!$worldset} {
+	puts "(xform-set World [fourmatrix])"
+	puts "(merge-baseap { lighting { replacelights light { position 0 0 0 1 }}})"
+	set worldset 1
+    }
+    looktoward $Orr(now) $Orr(trackcam) $Orr(watchobj) $Orr(followobj)  $turn $shiftby
+  }
+  if {$worldset} {
+    gvstop
+  }
+
+  set unpickable {}
+  if {$Orr(watchobj) != "" && $Orr(followobj) != ""} {
+    set unpickable $Orr(followobj)
+    if {$Orr(followobj) != "Sun"} {
+	append unpickable " [valueor Orr(centered,$Orr(followobj)) {}]"
+    }
+  }
+  set was [valueor Orr(wasunpickable) {}]
+  if {$unpickable != $was} {
+    foreach obj $was { puts "(pickable $obj [lindex {no yes} [visible $obj]])" }
+    foreach obj $unpickable { puts "(pickable $obj no)" }
+  }
+  set Orr(wasunpickable) $unpickable
+
+  catch {tickcmd}
+
+  if {$Orr(closedloop)} {
+    if {$Orr(acktime) < 0} {
+	# We'd lost track of time; start clock from scratch
+	puts "(set-clock 0)"
+	gvend
+	if {[gvnest]==0} {
+	  puts "(echo t= (clock) '\n')"
+	};# else {puts stderr "nest[gvnest] ack $Orr(acktime)"}
+    } else {
+	if {[gvnest]<=1} {
+	  puts "(echo t= (clock) '\n')"
+	};# else {puts stderr "nest[gvnest] ack $Orr(acktime)"}
+	gvend
+    }
+    set Orr(awaitack) [expr [gvnest]==0]
+  } else {
+    puts ")"
+  }
+  gvflush
+}
+
+proc valueor {varname {default 0}} {
+  upvar $varname var
+  if {[info exists var]} {
+    set var
+  } else {
+    set default
+  }
+}
+
+
+proc looktoward {now cam watch follow {turn ""} {shiftby ""}} {
+  global Orr pi
+  if {[info exists Orr(place,[bodyof $follow])]} {
+	set from [vecfrom [getplace $now $follow]]
+	set fromuniverse $from
+	set lookvec [vecfrom $from [getplace $now $watch]]
+	set up {0 0 1}
+	if {[info exists Orr(up)]} {
+	  set upbody [lindex $Orr(up) 0]
+	  if {[info exists Orr(place,$upbody)]} {
+	    set upz [expr sin($pi*[lindex $Orr(up) 1]/180)]
+	    set upr [expr cos($pi*[lindex $Orr(up) 1]/180)]
+	    set upx [expr $upr*cos($pi*[lindex $Orr(up) 2]/180)]
+	    set upy [expr $upr*sin($pi*[lindex $Orr(up) 2]/180)]
+	    set up [vmmul "$upx $upy $upz" [threematrix $Orr(place,$upbody)]] 
+	  }
+	}
+	set tfm [orthogZ $lookvec $up]
+	if {$turn != ""} {
+	  set tfm [mmmul $tfm $turn]
+	  set fromuniverse [vmmul $from $turn]
+	}
+	if {$shiftby != ""} {
+	  set fromuniverse [vsadd $fromuniverse 1 $shiftby]
+	}
+	set tfm [fourmatrix $tfm $fromuniverse]
+	set Orr(needclip,$cam) [expr .75*[mag $lookvec]]
+
+	puts "(if (real-id '$cam') (progn (xform-set '$cam' $tfm)"
+	if {[info exists Orr(curclip,$cam)] && $Orr(curclip,$cam) > $Orr(needclip,$cam)} {
+	  puts "(merge camera '$cam' { near [expr .7*$Orr(needclip,$cam)] })"
+	}
+	puts "(echo \"camera= {$cam} \") (write camera - '$cam')"
+	puts "))"
+  } else {
+	puts "(if (real-id '$cam') (look-toward $watch '$cam'))"
+  }
+}
+
+proc is_model_texturable {fname} {
+  set result -1
+  catch {
+    set f [open $fname r]
+    set result 0
+    while {[gets $f line] >= 0} {
+	if {[string match *texture*\{* $line] > 0} {
+	    set result 1; break
+	}
+    }
+    close $f
+  }
+  set result
+}
+
+proc loadorbits {} {
+  global Orr elem orbitsaround
+  foreach body $Orr(allbods) {
+    if {[showorbit $body] && 0!=[string compare $body Sun]} {
+	unpack $elem($body) center a e i node peri anom motion Torbit
+	set orbitsaround($center) $center.orbit
+
+	set b [expr $a*sqrt(1-$e*$e)]
+	set c [expr -$a*$e]
+	set orbx [svmul $a [lrange $Torbit 0 2]]
+	set orby [svmul $b [lrange $Torbit 3 5]]
+	set orbz [svmul $a [lrange $Torbit 6 8]]
+	set orboff [svmul -$e $orbx]
+	set useorb protorb
+	if {$e > .85} {
+	  set useorb protorb.fine
+	}
+	lappend orboogl($center) "{ INST transform $orbx 0 $orby 0 $orbz 0 $orboff 1 geom : $useorb }"
+    }
+  }
+  # Let it precess
+  if {[showorbit Moon]} {set orboogl(Earth) "{ : Moon.orbit }"}
+  puts "(hdefine geometry allorbits { LIST"
+  foreach center [array names orbitsaround] {
+    if {[info exists orboogl($center)]} {
+	puts "\n{ INST transform : $orbitsaround($center) geom { LIST"
+	puts [join $orboogl($center) "\n  "]
+	puts "}}"
+    }
+  }
+  puts "})"
+}
+
+# This is normally called once at startup.
+proc loadgv {} {
+  global Orr elem phys pi orbitsaround fastdraw
+  gv_version ; # Determine geomview version in case we need it later.
+  gvbegin
+  puts "(normalization allgeoms none)"
+  puts "(backcolor allcams 0 0 0)"
+  puts "(bbox-draw allgeoms off)"
+  puts "(merge-baseap {
+	shading smooth
+	material {
+		ks .05  shininess 20
+		edgecolor 1 1 1
+	}
+	lighting {
+		replacelights
+		light { position 0 0 0 1 }
+	}})"
+  puts "(lines-closer allcams 0)"
+
+  foreach body $Orr(allbods) {
+    if {[set fname [findpath $body]] != "" ||
+		[set fname [findpath "ball"]] != ""} {
+	if {![info exists texturable($fname)]} {
+	  set texturable($fname) [is_model_texturable $fname]
+	}
+	if {!$texturable($fname)} {
+	  texturable $body 0
+	}
+	puts "(geometry $body < $fname)"
+	if {![visible $body]} {
+	  puts "(merge-ap $body {-face})(pickable $body no)"
+	}
+	set fastdraw($body) [string match *ball $fname]
+	set Orr(model,$body) $fname
+    } else {
+	puts stderr "No model, not even 'ball', found for $body on $Orr(filepath)"
+    }
+  }
+  puts "(hdefine geometry protorb { VECT 1 181 0  181 0"
+  for {set th 0} {$th <= 180} {incr th} {
+	set c [expr cos($th*2*$pi/180)]
+	set s [expr sin($th*2*$pi/180)]
+	puts [format "%.3f %.3f 0" $c $s]
+  }
+  puts "})"
+  puts "(hdefine geometry protorb.fine { VECT 1 361 0  361 0"
+  for {set th -180} {$th <= 180} {incr th} {
+	set t [expr $th/180.]
+	set t [expr $pi*$t*abs($t)*abs($t)*(3-2*abs($t))]
+	puts [format "%.8f %.8f 0" [expr cos($t)] [expr sin($t)]]
+  }
+  puts "})"
+  set Orr(gvloaded) 1
+  loadorbits
+  puts "(geometry Orbits {})"
+  if {[gv_version origin]} {
+    puts "(interest (pick world))"
+  }
+  tick
+  gvend
+  gvflush
+}
+
+proc msg {str} {
+  puts stderr $str
+  if {[info commands .botmsg] != ""} {
+    .botmsg configure -text $str -wraplength [winfo width .]
+  }
+}
+
+proc truth str {
+  regexp -nocase {(1|on|true)} $str
+}
+
+proc stars {{on ""}} {
+  global elem phys Orr
+  switch $on {
+   1 - on - yes {set on "stars.oogl"}
+   0 - off - no {set on ""}
+   default { set on [findpath $on] }
+  }
+  if {$on != ""} {
+	set north [lrange [lindex $phys(Earth) 4] 6 8]
+	set sixh [cross $north {1 0 0}]
+	set loca [lindex {{} {origin camera 0 0 0}} [gv_version origin]] 
+	puts "(geometry Stars {INST $loca transform
+	1 0 0 0
+	$sixh 0
+	$north 0
+	0 0 0 1
+	geom {< $on}})"
+  } else {
+	puts "(geometry Stars {})"
+  }
+  set Orr(stars) [file tail $on]
+  gvflush
+}
+
+# "gv_version origin" returns 1 if we're Orr(running) with geomview supporting
+#	the ``INST origin...'' construct, else 0
+# "gv_version originbug" returns 1 if "INST origin local ..." doesn't work.
+# "gv_version" returns the geomview version string (or "1.5" if unknown).
+proc gv_version {{supporting {}}} {
+  global Orr
+  if {![info exists Orr(gv_version)]} {
+    set Orr(gv_version) 1.5
+    if {$Orr(closedloop)} {
+	puts {(echo "\n" Version (geomview-version) "\n")}
+	gvflush
+	while {[lindex [set vers [gets stdin]] 0] != "Version"} { }
+	set Orr(gv_version) [lindex $vers 1]
+    }
+  }
+  switch $supporting {
+  origin {
+    expr [string compare $Orr(gv_version) 1.6.1b4] >= 0 || [string compare $Orr(gv_version) 1.6.1-] >= 0
+  }
+  originbug {
+    expr [string compare $Orr(gv_version) 1.6.1p5] < 0
+  }
+  {} { set Orr(gv_version) }
+  }
+}
+
+# Equatorial grid
+proc eqgrid {{on 1} {rastep ""} {decstep ""}} {
+  global Orr phys pi
+
+  unpack $Orr(eqgridstep) gra gdec
+  catch {set gra [expr 1*$rastep]}
+  catch {set gdec [expr 1*$decstep]}
+  set Orr(eqgrids) [truth $on]
+  set Orr(eqgridstep) [list $gra $gdec]
+  if {$Orr(eqgrids) && ($gra>0 || $gdec>0)} {
+	set loca [lindex {{} {origin camera 0 0 0}} [gv_version origin]]
+	gvbegin
+	puts "(geometry EquatorialGrid { LIST"
+	puts "{ INST $loca transform [fourmatrix [lindex $phys(Earth) 4]] geom {"
+	puts "  INST transform 70 0 0 0  0 70 0 0  0 0 70 0  0 0 0 1 geom {"
+	puts "    INST geom { : protorb } transforms { TLIST"
+	if {$gra > 0} {
+	  set turn [rotation x 90]
+	  for {set ra 0} {$ra < 12} {set ra [expr $ra+$gra]} {
+		puts [fourmatrix [mmmul $turn [rotation z [expr $ra*15]]]]
+	  }
+	}
+	if {$gdec > 0} {
+	  # Equator
+	  for {set dec 0} {$dec < 90} {set dec [expr $dec+$gdec]} {
+		set th [expr $dec*$pi/180]
+		set r [expr cos($th)]
+		set z [expr sin($th)]
+		puts "$r 0 0 0  0 $r 0 0  0 0 $r 0  0 0 $z 1"
+		if {$z>0} {puts "$r 0 0 0  0 $r 0 0  0 0 $r 0  0 0 -$z 1"}
+	  }
+	}
+	puts "}}}}})"
+	puts "(merge-ap EquatorialGrid { material { edgecolor .4 .5 .9 } })"
+	gvend
+  } else {
+	puts "(geometry EquatorialGrid {})"
+  }
+  gvflush
+}
+
+proc orbits {{on 1}} {
+  global Orr
+  set yes [truth $on]
+  if {$yes} {
+	# Are all orbits off (see "showorbit")?  If so, turn them all on.
+	set none 1
+	foreach obody [array names Orr vis,*] {
+	  if {[string first O $Orr($obody)]>=0} {set none 0}
+	}
+	if {$none} {
+	  if {[info commands .ap] != ""} {	
+	    aptoggle .ap.b_All.orb; ap_apply
+	  } else {
+	    forallbodies showorbit 1
+	  }
+	  loadorbits
+	}
+	set Orr(orbits) -1
+	doupdate
+  } else {
+	puts "(geometry Orbits {})"
+  }
+  gvflush
+}
+
+proc run {{on 1}} {
+  global Orr
+  set yes [truth $on]
+  if {$yes == 0} {
+    set Orr(running) $yes
+    set Orr(acktime) -1
+  } elseif {$Orr(running) == 0} {
+    set Orr(acktime) -1
+    set Orr(running) $yes
+    if {!$Orr(awaitack)} {
+	tick
+    }
+  }
+  set Orr(date)
+}
+
+proc stop {} {
+  .date.run configure -relief raised
+  run 0
+}
+
+proc swell {{by ""}} {
+  global Orr
+  if {$by != ""} {
+    set Orr(swell) $by
+  }
+  set Orr(swell)
+}
+
+proc date {{is ""}} {
+  global Orr
+  if {$is != ""} {
+    set Orr(now) [str2date $is]
+    set Orr(date) [date2str $Orr(now)]
+  }
+  set Orr(date)
+}
+
+
+proc textures {on} {
+  if {$on} {
+    puts "(merge-ap World { *+texturing })"
+  } else {
+    puts "(merge-ap World { *-texturing })"
+  }
+  gvflush
+}
+
+proc record {startno {fname ""} {camera "Camera"}} {
+  global recdata
+  if {[catch {expr 1+$startno}]} {
+	proc tickcmd args {}
+  } else {
+	set recdata(recno) [expr $startno - 1]
+	set recdata(stem) $fname
+	if {![string match *%* $fname]} {
+	   set recdata(stem) "${fname}%03d.sgi"
+	}
+	proc tickcmd args "
+	  global recdata
+	  set outf \[format \$recdata(stem) \[incr recdata(recno)\]\]
+	  puts \"(snapshot $camera '\$outf')\"
+	  puts stderr \"\$outf \"
+	"
+  }
+}
+proc vecfrom {tfm {from ""}} {
+	set t $tfm
+	if {[llength $tfm]==16} {
+	    set t [lrange $tfm 12 14]
+	}
+	if {$from != ""} {
+	    if {[llength $from]==16} {
+		set t [vsadd $t -1 [lrange $from 12 14]]
+	    } else {
+		set t [vsadd $t -1 $from]
+	    }
+	}
+	set t
+}
+
+proc hel {tfm {from ""}} {
+	global pi
+	unpack [vecfrom $tfm $from] x y z
+	set r [expr sqrt($x*$x+$y*$y)]
+	set lat [expr $r==0&&$z==0 ? 0 : atan2($z,$r)*180/$pi]
+	set lon [expr $r==0 ? 0 : atan2($y,$x)*180/$pi]
+	list [expr sqrt($r*$r+$z*$z)] $lon $lat
+}
+
+proc now {args} {
+  global Orr
+  if {$args != ""} {
+	set Orr(now) [str2date $args]
+	set Orr(date) [date2str $Orr(now)]
+  }
+  set Orr(date)
+}
+
+
+proc dm {dv {sign ""}} {
+	set s $sign
+	if {$dv<0} {set s "-"}
+	set d [expr abs($dv)+.5/3600.]
+	set dd [expr int($d)]
+	set mm [expr int(60*($d-$dd))]
+	set ss [expr int(60*(60*($d-$dd)-$mm))]
+	format %s%02d:%02d:%02d $s $dd $mm $ss
+}
+
+proc equ {tfm {from ""}} {
+	global pi phys
+	set north [lrange [lindex $phys(Earth) 4] 6 8]
+	set sixh [cross $north {1 0 0}]
+	set t [vecfrom $tfm $from]
+	set t [vmmul $t [transpose [concat 1 0 0 $sixh $north]]]
+	unpack $t x y z
+	set r [expr sqrt($x*$x+$y*$y)]
+	set lat [expr $r==0&&$z==0 ? 0 : atan2($z,$r)*180/$pi]
+	set lon [expr $r==0 ? 0 : atan2($y,$x)*12/$pi]
+	if {$lon < 0} {
+	    set lon [expr $lon+24]
+	}
+	list [expr sqrt($r*$r+$z*$z)] [dm $lon] [dm $lat +]
+}
+
+proc elong {v1 v2} {
+	global pi
+	set l1 [mag $v1]
+	set l2 [mag $v2]
+	if {$l1==0 || $l2==0} {return 0}
+	set acos [expr [dot $v1 $v2]/($l1*$l2)]
+	expr $acos>1 ? 0 : 180*atan2(sqrt(1-$acos*$acos),$acos)/$pi
+}
+
+proc arrange {A B {C Sun}} {
+  global Orr
+  set pA [placebody $Orr(now) $A]
+  set pB [placebody $Orr(now) $B]
+  set pC [placebody $Orr(now) $C]
+  set AB [vecfrom $pB $pA]
+  set AC [vecfrom $pC $pA]
+  set BC [vecfrom $pC $pB]
+  lappend rpt "A $A B $B C $C"
+  lappend rpt [eval format {{A->B %.6g AU, RA %s Dec %.6s}} [equ $pB $pA]]
+  lappend rpt [eval format {{A->C %.6g AU, RA %s Dec %.6s}} [equ $pC $pA]]
+  lappend rpt [eval format {{B->C %.6g AU, RA %s Dec %.6s}} [equ $pC $pB]]
+  lappend rpt [format {Angles at: A %.3f B %.3f C %.3f} \
+	[elong $AB $AC] \
+	[expr 180-[elong $AB $BC]] \
+	[expr 180-[elong $AC $BC]]]
+  join $rpt "\n"
+}
+
+proc spikes {start step till body {body2 ""}} {
+  global elem
+  if {![info exists elem($body)] \
+    || ($body2 != "" && ![info exists elem($body2)]) \
+    || $step <= 0} {
+	return
+  }
+  set Orr(now) [str2date $start]
+  if {[string match {*[ /.:]*} $till]} {
+	set fin [str2date $till]
+	set n [expr int(($fin-$Orr(now))/$step) + 1]
+  } else {
+	set n $till
+  }
+  puts "(geometry Spikes.$body-$body2 { VECT\n$n [expr 3*$n-1] 1\n"
+  puts 2; for {set i 1} {$i < $n} {incr i} {puts 3}
+  puts 1; for {set i 1} {$i < $n} {incr i} {puts 0}
+
+  set at [getplace $Orr(now) $body]
+  if {$body2 == ""} {
+	set at2 "[lrange $at 0 1] 0"
+  } else {
+	set at2 [getplace $Orr(now) $body2]
+  }
+  puts $at2; puts "$at\n"
+  for {set i 1} {$i < $n} {incr i} {
+	set was2 $at2
+	set Orr(now) [expr $Orr(now)+$step]
+	set at [getplace $Orr(now) $body]
+	if {$body2 == ""} {
+	  set at2 "[lrange $at 0 1] 0"
+	} else {
+	  set at2 [getplace $Orr(now) $body2]
+	}
+	puts $was2; puts $at2; puts "$at\n"
+  }
+  puts "\n1 1 .7 1"
+  puts "})"
+  gvflush
+}
+
+proc eclgrid {radius step} {
+  if {$radius <= 0 || $step <= 0} {
+    puts "(geometry EclGrid {})"
+  } else {
+    set n [expr int($radius/$step)]
+    set lines [expr 4*$n+2]
+    puts "(geometry EclGrid { VECT\n$lines [expr 2*$lines] 1\n"
+    for {set i 0} {$i < $lines} {incr i} {puts 2}
+    puts "\n1"; for {set i 1} {$i < $lines} {incr i} {puts 0}
+    for {set i -$n} {$i <= $n} {incr i} {
+	set v [expr $i*$step]
+	puts "-$radius $v 0\n$radius $v 0"
+	puts "$v -$radius 0\n$v $radius 0"
+    }
+    puts "\n.7 1 1 1";
+    puts "})"
+  }
+  gvflush
+}
+	
+proc today {} {
+  global Orr env
+  set today [valueor Orr(now) 0]
+  if {[info exists env(TZ)]} {set tznow $env(TZ)}
+  catch {
+	set env(TZ) GMT0
+	set walldate [exec date]
+	set year [lindex $walldate 5]
+	set mon [lsearch $Orr(mnames) [lindex $walldate 1]]
+	set day [lindex $walldate 2]
+	scan [lindex $walldate 3] {%d:%d:%d} hh mm ss
+	set hday [expr $day + ($hh + $mm/60. + $ss/3600.)/24.]
+	set today [str2date $mon/$hday/$year]
+  }
+  if {[info exists tznow]} {set env(TZ) $tznow} else {unset env(TZ)}
+  set today
+}
+
+# Save state of everything; return a string encoding it.
+proc save_state {} {
+  global Orr
+  foreach v {followobj watchobj fixobj fixdir trackcam labelsize up dps} {
+    if {[info exists Orr($v)]} {
+	lappend st [list set Orr($v) $Orr($v)]
+    } else {
+	lappend st "catch {unset Orr($v)}"
+    }
+  }
+  foreach body $Orr(allbods) {
+    lappend st [list set "Orr(aptog visible $body)" [visible $body]]
+    lappend st [list set "Orr(aptog labeled $body)" [labeled $body]]
+    lappend st [list set "Orr(aptog showorbit $body)" [showorbit $body]]
+  }
+  lappend st "ap_apply"
+  lappend st {foreach tail [array names Orr tail,*] { unset Orr($tail) }}
+  foreach tail [array names Orr tail,*] {
+    scan $tail tail,%s body
+    lappend st [list tail $body $Orr($tail)]
+  }
+  if {$Orr(gvloaded)} {
+    while {[gvnest] > 0} {gvend}
+    puts {(echo Cameras:\n (all cameras) \n)}; gvflush
+    while {[gets stdin line] >= 0 && [string match *Cameras:* $line] == 0} {}
+    set line [string trim [gets stdin] "() \n"]
+    gvbegin
+    puts "(echo \"(xform-set World \")"
+    puts "(write transform - World)"
+    puts "(echo \")\\n\")"
+    foreach cam $line {
+	puts "(echo '(window (if (real-id \"$cam\") \"$cam\" default)\\n')"
+	puts "(write window - '$cam')"
+	puts "(echo ')\\n')"
+	puts "(echo \"(camera '$cam' \")"
+	puts "(write camera - '$cam')"
+	puts "(echo \")\\n\")"
+    }
+    puts "(echo EOF\\n)"
+    gvend
+    gvflush
+    set setup {}
+    while {[gets stdin line] >= 0 && [string match *EOF* $line] == 0} {
+	regsub {window {.*(size [0-9]+ [0-9]+)[^\}]*}} $line {window {\1}} line
+	append setup "$line\n"
+    }
+    lappend st [list tell_gv $setup]
+  }
+  lappend st "swell $Orr(swell)"
+  lappend st "orbits $Orr(orbits)"
+  lappend st "eqgrid $Orr(eqgrids) $Orr(eqgridstep)"
+  lappend st "stars $Orr(stars)"
+  lappend st "now $Orr(date)"
+  join $st "\n"
+}
+
+proc tell_gv {cmds} {
+  global Orr
+  if {$Orr(gvloaded)} {
+    gvbegin
+    puts $cmds
+    gvend
+    gvflush
+  }
+}
+
+# Send data to geomview; quit if it's no longer listening.
+proc gvflush {} {
+  if {[catch {flush stdout}]} {
+    exit
+  }
+}
+
+proc gvbegin {} {
+  global Orr
+  puts "(progn"
+  incr Orr(gvnest)
+}
+
+proc gvend {} {
+  global Orr
+  if {$Orr(gvnest) > 0} {
+    puts ")"
+    incr Orr(gvnest) -1
+  }
+  gvflush
+}
+
+proc gvnest {} {
+  global Orr
+  set Orr(gvnest)
+} 
+
+# Stop the world!  This is a hack -- simulate pressing the H key.
+proc gvstop {} {
+  puts "(rawevent 72 0 0 0 0)"
+}
+
+proc load_state {cmds} {
+  global Orr
+  . configure -cursor watch
+  gvbegin
+  gvstop			;# Stop geomview motion
+  stop				;# Stop running, too.
+  uplevel #0 $cmds
+  loadorbits
+  doupdate
+  gvend
+  . configure -cursor {}
+}
+
+proc saveto {file} {
+  # Force file name to be something.orr
+  if {![string match *.orr $file]} {set file "$file.orr"}
+  set failed [catch {
+    set f [open $file w]
+    puts $f [save_state]
+    close $f
+  } whynot]
+  if {$failed} {
+    msg $whynot
+  } else {
+    msg "Saved to $file"
+  }
+}
+
+proc loadfrom {file} {
+  set failed [catch {
+    set f [open $file r]
+    set stuff [read $f]
+    load_state $stuff
+  } whynot]
+  if {$failed} {
+    puts stderr $whynot
+    global errorInfo; set Orr(errorInfo) $errorInfo
+  }
+}
+
+proc do_load_stuff {fname} {
+  grab release .loadmenu
+  loadfrom $fname
+}
+
+proc do_load {} {
+  catch {destroy .loadmenu}
+  set all [findpathall *.orr 1]
+  if {$all == ""} {
+    file_browser {do_load_stuff} 0 *.orr {} {Load setup from *.orr...}
+    return
+  }
+  menu .loadmenu
+  .loadmenu add command -label "Browse ..." -command {
+    file_browser {do_load_stuff} 0 *.orr {} {Load setup from *.orr...}
+  }
+  foreach file $all {
+    regexp {([^/]+)\.orr$} $file junk tail
+    .loadmenu add command -label $tail -command "do_load_stuff $file"
+  }
+  post_menu .loadmenu
+}
+
+proc do_save {} {
+  file_browser {saveto} 1 *.orr {} {Save setup to *.orr ...}
+}
+
+proc do_help {} {
+  if {[info commands .help] != ""} {
+    wm deiconify .help
+    return
+  }
+  toplevel .help
+  wm title .help {ptile help}
+  set help \
+{The Orrery -- Stuart Levy, slevy@ncsa.uiuc.edu, Geometry Center
+(c) 1997, University of Minnesota.
+Some things to try:
+ - Use geomview's controls: try selecting geomview's
+        "fly" or "orbit" mode and looking around the solar system.
+        Middle-mouse moves forward, left-mouse steers (fly) or rotates (orbit).
+ - If you get lost, re-center the camera (type "cw" in graphics window).
+        Best not to press geomview's Reset button; if you do, click
+          the Back- or Forward-step buttons to restore a sensible view.
+ - Open "Display..." panel, turn on texture-mapping for a couple of
+        planets (or for All if you've a fast system)
+        Right-click on a planet in geomview window with "Display..." open
+        to select it & see position.
+ - Press "Load" and try some of the demos.
+ - Nice view? try "Save", and save in a file named something.orr.
+   Also try geomview's File->Save->Save as...(SGI or PPM Screen) to save image.
+
+Orrery controls:
+  "Load"   : Offer a menu of saved Orrery states.
+  "Save"   : Save current state.  Save as something.orr, or Load won't show it!
+
+  "Camera" : Choose which Geomview camera is affected by "Move" and "Look".
+             (the default, "Camera", is normally good).
+  "Move with": Move viewpoint with given object.  Right-click for menu.
+  "Look toward": Keep object centered in camera's field of view.
+        If both "Move" and "Look" are set, camera looks from "Move with" obj.
+        If "Move" set but "Look" isn't, camera may be anywhere, but translates
+          by the same amount the "Move with" object does.
+
+  "Fix Object": Move the geomview world to keep this object fixed at the origin.
+  "Fix Direction To": Rotate geomview world to keep the line from
+                "Fix Object" to this object aligned with the X axis.
+
+  "days/sec" : In "Play" mode, advance time by N days per wall-clock second.
+               Click on "days/sec" to change mode to "days/tick".
+  "Play" (triangle button):  Animate solar-system motions.  Click again to stop.
+  "Back" (- step button):    Step N days backward.
+  "Forward (+ step button):  Step N days forward.  Actually, for both buttons,
+          leftmouse-click   steps N days
+          middlemouse-click steps N/10 days
+          rightmouse-click  steps N*10 days
+  "UT Date":  This is the current simulated date and time, in Universal Time
+        (= Greenwich time).  Also accepts mm/dd/yyyy e.g. 3/15/1997.
+        Type new value, then press Enter.
+
+  "Swell"    : Enlarge objects: N times larger than actual size.
+                Planets' satellites lie within their swollen bodies
+                unless Swell is quite small.  You'll need to use
+                "Look toward" and geomview's "Zoom" mode to see anything --
+                the solar system has lots of empty space! Note the Sun
+                doesn't swell; it'd be bigger than the solar system!
+  "Stars"    : Select star field.  Mag 4 shows constellations to city eyes.
+  "Orbits"   : Show/hide all orbits; see also "Display".
+  "Eq. Grid" : Turn equatorial-coordinate grid on/off
+  "Display"  : more display controls:
+    For each object, a row of buttons, selecting:
+      show orbit
+      show label (of size shown at top of Display panel)
+      show object: invisible, wireframe, shaded, textured(if available)
+    Object selection:
+      Click on object name, or click & drag over a range, to select one or more.
+      Shift-click & drag to toggle or add to selected set.
+    3D-graphical selection:
+      Right-mouse-click in geomview window to select that object.
+        (This works sometimes but not always, sorry, due to geomview bugs.)
+
+    Topmost row of buttons applies to "All" objects if none selected,
+      "Selected" objects if some are.
+    To de-select all: try click, then shift-click, on any object.
+
+Commands:
+  Some special effects are available as commands.
+  Double-click on the message area to open a command-line window.
+
+    spikes  {start-date} {daystep}  {end-date}  {body}  {otherbody}
+      Draw lines connecting positions of "body" and "otherbody"
+      at "daystep"-day intervals from "start-date" to "end-date".
+      "otherbody" optional => connect "body" to the ecliptic plane.  E.g.:
+
+      spikes 1/1/1997 10 5/30/1997  Earth  Hale-Bopp
+
+    tail body length width
+      Give "body" a tail pointing always away from the Sun, "length" AU long
+        and "width" AU at its widest.  E.g.
+
+      tail Hale-Bopp .3 .05
+
+    arrange bodyA bodyB [bodyC]
+      Print relative distances and angles among three bodies at current time.
+      bodyC, if omitted, defaults to the Sun.
+
+    eqgrid  1-or-0  rastep  decstep
+      Turn equatorial grid on/off, with given spacing in RA (hours)
+      and Dec (degrees)
+}
+  set l 0
+  foreach w [split $help \n] {
+    set l [max [string length $w] $l]
+  }
+  text .help.txt -wrap word -width [expr $l+1] -height 24 \
+	-yscrollcommand {.help.sb set}
+  scrollbar .help.sb -orient vertical -command {.help.txt yview}
+  .help.txt insert end $help
+  pack .help.txt -side left -fill both -expand 1
+  pack .help.sb -side right -fill y
+  .help.txt configure -state disabled
+}
+
+proc do_stars_stuff {fname} {
+  grab release .loadmenu
+  stars $fname
+}
+
+proc do_stars {} {
+  global Orr
+  catch {destroy .loadmenu}
+  menu .loadmenu
+  set all [findpathall stars*.oogl 1 1]
+  .loadmenu add command -label "Off" -command "do_stars_stuff {}"
+  .loadmenu add command -label "Browse ..." -command {
+    file_browser {do_stars_stuff} 0 * {} {Load stars from...}
+  }
+  set sel Off
+  if {$Orr(stars) != ""} {set sel Browse*}
+  foreach file $all {
+    regexp {stars-?([^/]+)\.oogl$} $file junk tail
+    if {[file tail $file] == "$Orr(stars)"} {
+	set sel $tail
+    }
+    if {$tail == ""} {set tail "On (default)"}
+    .loadmenu add command -label $tail -command "do_stars_stuff $file"
+  }
+  post_menu .loadmenu $sel
+}
+
+
+proc postentry {func prompt {dflt ""}} {
+  global Orr
+  if {[info commands .ent] == ""} {
+    entry .ent -textvariable Orr(ent) -background $Orr(selbg)
+  }
+  pack .ent -after .top -side top -fill x
+  focus .ent
+  .botmsg configure -text $prompt
+  set Orr(ent) $dflt
+  bind .ent <Return> "pack forget .ent\;
+	if {\$Orr(ent)=={}} {msg Cancelled.} else {$func \$Orr(ent)}"
+}
+
+proc post_menu {m {selindex ""}} {
+  set yoff 10
+  if {$selindex != ""} {
+    update
+    set yoff [expr [$m yposition $selindex]+10]
+    $m entryconfigure $selindex -underline 0
+    set xoff 40
+  }
+  $m post [expr [winfo pointerx .]-[winfo reqwidth $m]/2] \
+    [min [expr [winfo pointery .]-$yoff] {{[winfo screenheight .]-[winfo reqheight $m]}}]
+  global tkPriv
+  set tkPriv(window) $m
+  grab $m
+}
+
+
+proc orrery_console {} {
+    while {1} {
+	puts -nonewline stderr "> "
+	gets stdin s
+	while {![info complete $s] && [gets stdin ss] != ""} {
+		set s "$s\n$ss"
+	}
+	if {[eof stdin]} {
+		exit
+	}
+	if {$s == ""} {
+	  set Orr(now) [expr $Orr(now)+$Orr(dps)]
+	  tick
+	  puts -nonewline stderr "$Orr(date) "
+	} else {
+	  catch {uplevel #0 $s} err
+	  if {$err != ""} {
+		puts stderr $err
+	  }
+	}
+    }
+}
+
+#
+# Start
+#
+
+proc start_orrery {argv {argv0 "orrery"}} {
+  global Orr
+
+  set Orr(now) [today]
+  set Orr(date) [date2str $Orr(now)]
+
+  set Orr(debug) 0
+  set quiet 0
+  set batch 0
+  set console 0
+  set needgui 1
+  for {set i 0} {[set a [lindex $argv $i]] != ""} {incr i} {
+    switch -glob -- $a {
+	-noui { set needgui 0 }
+	-date { catch {set Orr(now) [str2date [lindex $argv [incr i]]} }
+	-d* { set Orr(debug) 1 }
+	-q* { set quiet 1 }
+	-b* { set batch 1; set needgui 0; set quiet 1 }
+	-i  { set console 1; set quiet 1 }
+	-e  {
+	    if {[catch {eval [lindex $argv [incr i]]} whynot]} {
+	      puts stderr "$argv0: [lindex $argv $i]: $whynot"
+	    }
+	}
+	--  {
+	    if {[catch {eval [lrange $argv [incr i] end]} whynot]} {
+	      puts stderr "$argv0: [lrange $argv $i end]: $whynot"
+	      set i 999
+	    }
+	}
+    }
+  }
+
+  initui $needgui
+  set Orr(swell) 1000.0
+  logtrack Orr(swell) .view1.sswell 0
+
+  update
+
+  initelem
+
+  if {$batch} {return}
+
+  if {!$quiet} {
+    . configure -cursor watch
+    loadgv
+    . configure -cursor {}
+  }
+
+  if {$console} {	# tty-style calculator mode
+    orrery_console
+  } elseif {[info commands fileevent] != ""} {
+    fileevent stdin readable {tock}
+  }
+}
+
+# Invoke the Orrery, unless we're just being re-read.
+if {![info exists .bodymenu]} {
+
+  foreach thing {vectext browser} {
+    if {[info commands $thing] == ""} {
+	proc $thing args {}
+	catch {source [findpath $thing.tcl]}
+    }
+  }
+  start_orrery $argv $argv0
+  if {[info exists repair]} {eval $repair; unset repair}
+}

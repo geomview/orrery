@@ -1,0 +1,13 @@
+appearance {
+	material { diffuse 0.64 .85 1   edgecolor 0.64 .85 1 }
+	texture {
+	    file earth.ppm.Z
+	    transform {
+		1 0 0 0
+		0  1 0 0
+		0  0 1 0
+		.5 0 0 1
+	    }
+	}
+}
+< cyl.mesh

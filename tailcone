@@ -1,0 +1,46 @@
+#! /usr/local/bin/perl
+
+if(@ARGV == 0) {
+  print STDERR "Usage: $0 -z length -r width -n nrings[,nsides]  alpha0 [alpha1]
+Writes a MESH representing a cone (or paraboloid), with opacity ranging
+from alpha0 at the vertex to alpha1 at the edge.
+";
+  exit(1);
+}
+
+$zmax = 1;
+$rmax = 1;
+$nu = 2;
+$nv = 6;
+
+while($ARGV[0] =~ /-[rzn]/) {
+  shift, $zmax = shift if $ARGV[0] =~ /-z/;
+  shift, $rmax = shift if $ARGV[0] =~ /-r/;
+  if($ARGV[0] =~ /-n/) {
+    shift;
+    $nu = $1 if $ARGV[0] =~ /^(\d+)/;
+    $nv = $1 if $ARGV[0] =~ /[^\d](\d+)/;
+    shift;
+  }
+}
+
+$alpha0 = shift if($ARGV[0] =~ /^[.\d]+$/);
+$alpha1 = shift if($ARGV[0] =~ /^[.\d]+$/);
+
+print "# tailcone -z $zmax -r $rmax -n ${nu}x${nv}  $alpha0  $alpha1\n";
+print "CvMESH\n";
+print "$nu $nv\n\n";
+$suf = $nu>2 ? "\n" : "\t";
+for($v = 0; $v < $nv; $v++) {
+  $th = 6.28318*$v/$nv;
+  $x = cos($th);
+  $y = sin($th);
+  for($u = 0; $u < $nu; $u++) {
+    $tu = $u/($nu-1);
+    $r = $rmax * $tu;
+    $z = $zmax * $tu*$tu;
+    $a = $alpha0 + ($alpha1-$alpha0)*sqrt($tu);
+    printf "%.4f %.4f %.4f  1 1 1 %.3f%s", $r*$x,$r*$y,$z, $a, $suf;
+  }
+  print "\n";
+}

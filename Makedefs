@@ -1,0 +1,8 @@
+NAME = orrery
+SRCS = orrery_funcs.c testwish.c
+OBJS = orrery_funcs.o
+TKSCRIPTS = orrery
+UTILS = peri2elem quick2elem tailcone stargv mktxmesh
+DATA = yale.star.gz
+DISTFILES = ${TKSCRIPTS} README.orrery ${UTILS} ${DATA}
+TARGETS = lib${NAME}.a

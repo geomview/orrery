@@ -1,0 +1,277 @@
+			      THE ORRERY
+			    Version 0.9.2
+
+  [ Note: This release of the Orrery, version 0.9.2, is essentially   ]
+  [ the same as the original one that Stuart Levy released in 1997.   ]
+  [ The only difference is in the organization of the files --- this  ]
+  [ copy is modified to work with the new Geomview source tree and    ]
+  [ Makefile system.						      ]
+  [ 								      ]
+  [ mbp Sun Mar 18 19:05:46 2001				      ]
+
+The Orrery is a digital model of the solar system, named for the mechanical
+models of the same name (often you'll see one with just the Sun, Earth
+and Moon, as little balls supported on wires); the first such was built
+for the fourth Earl of Orrery in the 1700's.
+
+It includes all nine planets, some of their satellites, and a few recent
+comets.
+
+If you have questions, problems, or comments relating to this software
+(which probably deserves to be called a beta release), please write to us at:
+
+   software@geomview.org
+
+
+INSTALLATION
+
+For installation instructions, see the file INSTALL.
+
+The .geomview-orrery file(s) mention "wish", the tcl/tk interpreter;
+they assume it's on your UNIX search path.  You may want to change
+this for a couple of reasons:
+
+  - if you have a version 8.0 wish installed somewhere,
+	and it's different from "wish", use that.  The pre-interpretation
+	in tcl/tk 8.0 speeds up the orrery's calculations quite a bit.
+  - if you don't have "wish" installed, but you do have one of the
+	geomview 1.6.1 releases, you can use its built-in wish.
+	Change "wish" to "emodule-wish.sh".
+
+  In either case, you can just edit any of the
+    modules/*/.geomview-orrery
+  files; they're all linked together, so changing any of them changes all.
+
+WHAT'S INCLUDED?
+
+  You can invoke the orrery itself with
+
+    geomview -start orrery
+
+  or by picking "Orrery" from geomview's list of modules.
+  See the "Help" button for explanations and suggestions on use.
+
+  You'll also find some command-line-based tools in src/bin/orrery.
+  Invoked with no parameters, each gives a brief usage message describing
+  how to use it.
+
+    peri2elem
+	Add new comets.  Convert cometary orbital elements,
+	with specified eccentricity, perihelion distance and date,
+	into something which could be added to our orbital-elements file,
+	data/modules/orrery/orrery.elements.
+
+    stargv
+	Make your own star field.  Read yale.star-format file,
+	extracting stars brighter than a specified limit, and writing
+	Geomview-readable file suitable to be placed in
+	data/modules/orrery/stars-to-mag-N.oogl.
+	If you have the SAO database in ".star"-format too (not included here),
+	you can generate star charts down to mag 9 or so.
+
+    mktxmesh
+	Generate a spherical MESH object, with texture coordinates specified
+	for one of several kinds of map projections.
+
+  Also, there's some reusable tcl code in the data/modules/orrery
+  directory:
+
+    data/modules/orrery/vectext.tcl
+	Vector text generator.  Contains a built-in Hershey font.
+
+    data/modules/orrery/browser.tcl
+	A simple file browser.
+
+
+
+DEPENDENCIES
+
+You'll need at least some variant of geomview 1.6, as some of
+the bodies include texture maps, which geomview 1.5 couldn't parse.
+Even in geomview 1.6.1, the plain-X renderer accepts but ignores texture
+mapping.  Most of the geomview 1.6.1 binary distributions also include an
+Open GL version, built using the Open-GL-like Mesa libraries.
+You can see textured images with
+  geomview -opengl -start orrery
+
+Note that texture mapping is still off by default; see the Display... panel.
+
+
+LIMITATIONS
+
+The Orrery is very simple numerically; it just uses fixed Keplerian
+orbital elements for each body.  Though there's no closed form for
+position as a function of time on such an orbit, there *is* a closed form
+for time as a function of position; it uses Newton's method to find the
+inverse function for each body at each time step.
+The orbital elements are, I suspect, osculating elements as of 1996.0,
+though I'm not sure; they're expressed in epoch-2000 coordinates.
+The only exception to this is the moon; see Credits below.
+
+Accuracy seems moderately good; within a few years of the present,
+positions (RA, Dec) among the inner planets seem within a minute of arc
+or so of values from Elwood Downey's "ephem" program.
+Cometary positions seem similarly accurate.  The outer planets (>= Jupiter)
+are much worse -- off by several minutes of arc.  I don't know why.
+Lunar positions are good enough to detect eclipses, but not to predict them;
+the moon's longitude often seems to be off by an hour or two of lunar motion.
+
+Accuracy gets much worse at times far from the present; positions centuries
+from now disagree with "ephem" by a few degrees.
+
+
+CREDITS
+
+This Orrery module was written, originally as a demonstration of Geomview
+texture mapping, by Stuart Levy (slevy@ncsa.uiuc.edu) at the Geometry Center,
+University of Minnesota and is copyright (c) 1997, University of Minnesota.
+Non-commercial use and redistribution are permitted so long as this notice
+remains.
+
+The formulae for calculating the Moon's position were adapted from Elwood
+Downey's "ephem" program, <URL:ftp://iraf.noao.edu/contrib/xephem/ephem>;
+he in turn translated them from Peter Duffet-Smith's book "Astronomy with
+Your Personal Computer", Cambridge University Press, 1985.
+I've omitted many small-amplitude terms, so this lunar ephemeris is less
+accurate than theirs.
+
+For all other bodies, planetary orbital elements and physical data
+(pole direction, etc.) in data/modules/orrery/orrery.elements
+were taken from JPL's program "quick"; I think they amount to osculating
+elements as of 1996.0, in coordinate system 2000.0.  Orbital elements
+are widely available, though I'm not sure where you can find physical
+data in a convenient, publicly available place; maybe the US Govt.
+Printing Office publication Astronomical Almanac?  (Some comets were added
+by hand.  Note that the Orrery module deals only with elliptical orbits, e<1.)
+
+The stars were taken from the Yale Bright Star Catalogue.  The version
+used was the "yale.star" reduced file included as part of the
+useful "starchart" package:
+  <URL:ftp://ftp.uu.net/usenet/comp.sources.unix/volume12/starcharts/>
+  <URL:ftp://ftp.uu.net/usenet/comp.sources.unix/volume13/starchart/>
+That file is also included here, as src/bin/orrery/yale.tar.gz.
+
+
+
+Most of the images included here in the data/modules/orrery directory,
+used for texturing the surfaces of the planets, are copyrighted,
+but may be used under fairly liberal conditions, naturally including proper
+credit to their sources.  So, here are the credits for these fine images,
+with the place from which each was retrieved.
+
+The images weren't retrieved in precisely the form given here; often they
+were JPEG or sometimes GIF images of some arbitrary size, which I've
+scaled and converted into these power-of-two-sized .ppm.{Z,gz} files.
+
+The images came from three sources:
+ - NASA's Planetary Data System (PDS, <URL:http://www-pdsimage.wr.usgs.gov>)
+ - the Clementine Lunar Image Browser (image of Earth's Moon);
+ - the Geometry Center using public-domain CIA outline data for the Earth.
+
+ * jupiter.ppm.gz  PDS image PIA00011, "Cylindrical Projection of Jupiter"
+  Available (image and more details on its origin) from
+   <URL:http://www-pdsimage.wr.usgs.gov/cgi-bin/PIAGenCatalogPage.pl?PIA0011>
+  Produced by
+   JPL, <URL:http://www.jpl.nasa.gov>
+  Caption mentions
+    ``... made from 10 color images of Jupiter taken Feb. 1, 1979, by
+	Voyager 1, during a single 10-hour rotation of the planet. ...''
+
+ * mars+90.ppm.gz  PDS image PIA00193, "Latitude 90 Degrees North to
+		90 Degrees South and Longitude 0 degrees to 180 degrees"
+ * mars+270.ppm.gz PDS image PIA00194, "Latitude 90 Degrees North to
+		90 Degrees South and Longitude -180 Degrees to 0 Degrees"
+  Available (image and more on its origin) from
+   <URL:http://www-pdsimage.wr.usgs.gov/cgi-bin/PIAGenCatalogPage.pl?PIA00193>
+   <URL:http://www-pdsimage.wr.usgs.gov/cgi-bin/PIAGenCatalogPage.pl?PIA00194>
+  Produced by
+   USGS Flagstaff, <URL:http://wwwflag.wr.usgs.gov>
+   from Viking orbiter 1 data
+  Captions mention
+	... Lambert azimuthal equal area projection ...
+
+
+ * venus.pgm.gz was assembled from two cylindrical-projection PDS images:
+
+		PIA00255 (Western hemisphere: left 240E, right 67.5E)
+		PIA00256 (Eastern hemisphere; left edge 52.5E, right 240E)
+  Available (image and more on its origin) from
+   <URL:http://www-pdsimage.wr.usgs.gov/cgi-bin/PIAGenCatalogPage.pl?PIA00255>
+   <URL:http://www-pdsimage.wr.usgs.gov/cgi-bin/PIAGenCatalogPage.pl?PIA00256>
+  Produced by
+   Solar System Visualization Project and Magellan science team
+   at JPL Multimission Image Processing Laboratory, from
+   Magellan synthetic-aperture radar mosaics.
+
+There's one non-PDS image, the index map for the Clementine Lunar Image
+Browser, <URL:http://www.nrl.navy.mil/clementine/clib>.
+
+ * moon.pgm.gz  Clementine image
+    Available from
+     <URL:http://www.nrl.navy.mil/clementine/clib>
+
+    This appears to be the same image as the USGS global albedo map,
+    <URL:http://wwwflag.wr.usgs.gov/USGSFlag/Space/clementine/images/albedo.simp750.jpeg>
+    Like other items on the wwwflag.wr.usgs.gov web page, it's in
+    the public domain.  It was:
+
+    Produced by
+      USGS Flagstaff, assembled into global albedo map, from Clementine data
+    Caption includes
+      About 50,000 Clementine images have been processed and mosaicked to
+      produce a global map of the Moon's albedo (normalized brightness or
+      reflectivity) at a wavelength of 750 nm (just longward of visible red).
+
+
+ * earth.ppm.Z
+    I (slevy@ncsa.uiuc.edu) produced this Earth image using the public-domain
+    CIA World Bank II outline database, with a program derived from one
+    written by Joe Dellinger of Stanford.  The adapted program, with data,
+    is available from <URL:ftp://geom.umn.edu/priv/slevy/worldmap.tar.gz>.
+    Basically it wrote a collection of Postscript outlines for a
+    rectangular projection of the earth; these were converted to an image,
+    then manually patched up and flood-filled using ImageMagick.
+
+Here's the copyright statement for the PDS images, as obtained from
+<URL:http://www.jpl.nasa.gov/archive/copyright.html>, 10/31/1996.
+
+   Image Copyright Information
+
+   NASA generally has no objection to the reproduction and use of such
+   NASA materials (audio transmissions and recordings; video transmission
+   or recordings; or still or motion picture photography), subject to the
+   following conditions:
+
+     * NASA material may not be used to state or imply the endorsement by
+       NASA or by any NASA employee of a commercial product, service or
+       activity, or used in any manner that might mislead.
+     * NASA should be acknowledged as the source of the material.
+     * It is unlawful to falsely claim copyright or other rights in NASA
+       material.
+     * NASA shall in no way be liable for any costs, expenses or demands
+       arising out of the use of NASA material by a recipient or a
+       recipient's distributees.
+     * NASA does not indemnify nor hold harmless users of NASA material,
+       nor release such users from copyright infringement, nor grant
+       exclusive use rights with respect to NASA material.
+     * NASA material is not protected by copyright unless noted. If
+       copyrighted, permission should be obtained from the copyright
+       owner prior to use. If not copyrighted, NASA material may be
+       reproduced and distributed without further permission from NASA.
+     * If a recognizable person, or talent (e.g., a noted personality
+       engaged to narrate a film) appears in NASA material, use for
+       commercial purposes of that person's or talent's name, photograph
+       likeness, voice, or biographical material may infringe a right of
+       privacy or publicity. Therefore, permission should be obtained
+       from the recognizable person or talent.
+     * Some NASA material may incorporate music or footage which is
+       copyrighted and licensed for the particular NASA work. Any editing
+       or otherwise altering of the work may not be covered under the
+       original license, and therefore would require permission of the
+       copyright owner.
+
+     _________________________________________________________________
+
+   [Go to: JPL Archives | JPL Home Page]
+   Questions or Comments?
+

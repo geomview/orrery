@@ -1,0 +1,18 @@
+
+LIST
+{ appearance { shading smooth  +backcull
+    material { diffuse 1 .7 .45  edgecolor 1 .7 .45 }
+    texture { file mars+90.ppm.gz   apply modulate }
+  }
+  INST transform  0 -1 0 0  0 0 1 0  1 0 0 0  0 0 0 1
+  geom { < marshemi.mesh }
+}
+
+{ appearance {
+    shading smooth  +backcull
+    material { diffuse 1 .7 .45  edgecolor 1 .7 .45 }
+    texture { file mars+270.ppm.gz  apply modulate }
+  }
+  INST transform  0 1 0 0  0 0 1 0  -1 0 0 0  0 0 0 1
+  geom { < marshemi.mesh }
+}

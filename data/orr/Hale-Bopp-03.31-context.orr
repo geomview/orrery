@@ -1,0 +1,126 @@
+set Orr(followobj) Earth
+set Orr(watchobj) Hale-Bopp
+set Orr(fixobj) {}
+set Orr(fixdir) {}
+set Orr(trackcam) Camera
+set Orr(labelsize) 0.1
+set Orr(up) {Earth 80 -93}
+set Orr(dps) 1
+set {Orr(aptog visible Sun)} 2
+set {Orr(aptog labeled Sun)} 0
+set {Orr(aptog showorbit Sun)} 0
+set {Orr(aptog visible SL9)} 2
+set {Orr(aptog labeled SL9)} 0
+set {Orr(aptog showorbit SL9)} 0
+set {Orr(aptog visible Hyakutake)} 2
+set {Orr(aptog labeled Hyakutake)} 0
+set {Orr(aptog showorbit Hyakutake)} 0
+set {Orr(aptog visible Hale-Bopp)} 2
+set {Orr(aptog labeled Hale-Bopp)} 0
+set {Orr(aptog showorbit Hale-Bopp)} 1
+set {Orr(aptog visible Mercury)} 2
+set {Orr(aptog labeled Mercury)} 0
+set {Orr(aptog showorbit Mercury)} 1
+set {Orr(aptog visible Venus)} 3
+set {Orr(aptog labeled Venus)} 0
+set {Orr(aptog showorbit Venus)} 1
+set {Orr(aptog visible Earth)} 3
+set {Orr(aptog labeled Earth)} 0
+set {Orr(aptog showorbit Earth)} 1
+set {Orr(aptog visible Moon)} 2
+set {Orr(aptog labeled Moon)} 0
+set {Orr(aptog showorbit Moon)} 0
+set {Orr(aptog visible Mars)} 2
+set {Orr(aptog labeled Mars)} 0
+set {Orr(aptog showorbit Mars)} 0
+set {Orr(aptog visible Jupiter)} 3
+set {Orr(aptog labeled Jupiter)} 0
+set {Orr(aptog showorbit Jupiter)} 1
+set {Orr(aptog visible Io)} 2
+set {Orr(aptog labeled Io)} 0
+set {Orr(aptog showorbit Io)} 0
+set {Orr(aptog visible Europa)} 2
+set {Orr(aptog labeled Europa)} 0
+set {Orr(aptog showorbit Europa)} 0
+set {Orr(aptog visible Ganymede)} 2
+set {Orr(aptog labeled Ganymede)} 0
+set {Orr(aptog showorbit Ganymede)} 0
+set {Orr(aptog visible Callisto)} 2
+set {Orr(aptog labeled Callisto)} 0
+set {Orr(aptog showorbit Callisto)} 0
+set {Orr(aptog visible Amalthea)} 0
+set {Orr(aptog labeled Amalthea)} 0
+set {Orr(aptog showorbit Amalthea)} 0
+set {Orr(aptog visible Saturn)} 2
+set {Orr(aptog labeled Saturn)} 0
+set {Orr(aptog showorbit Saturn)} 0
+set {Orr(aptog visible Mimas)} 2
+set {Orr(aptog labeled Mimas)} 0
+set {Orr(aptog showorbit Mimas)} 0
+set {Orr(aptog visible Enceladus)} 2
+set {Orr(aptog labeled Enceladus)} 0
+set {Orr(aptog showorbit Enceladus)} 0
+set {Orr(aptog visible Tethys)} 2
+set {Orr(aptog labeled Tethys)} 0
+set {Orr(aptog showorbit Tethys)} 0
+set {Orr(aptog visible Dione)} 2
+set {Orr(aptog labeled Dione)} 0
+set {Orr(aptog showorbit Dione)} 0
+set {Orr(aptog visible Rhea)} 2
+set {Orr(aptog labeled Rhea)} 0
+set {Orr(aptog showorbit Rhea)} 0
+set {Orr(aptog visible Titan)} 2
+set {Orr(aptog labeled Titan)} 0
+set {Orr(aptog showorbit Titan)} 0
+set {Orr(aptog visible Iapetus)} 2
+set {Orr(aptog labeled Iapetus)} 0
+set {Orr(aptog showorbit Iapetus)} 0
+set {Orr(aptog visible Uranus)} 2
+set {Orr(aptog labeled Uranus)} 0
+set {Orr(aptog showorbit Uranus)} 1
+set {Orr(aptog visible Neptune)} 2
+set {Orr(aptog labeled Neptune)} 0
+set {Orr(aptog showorbit Neptune)} 0
+set {Orr(aptog visible Triton)} 2
+set {Orr(aptog labeled Triton)} 0
+set {Orr(aptog showorbit Triton)} 0
+set {Orr(aptog visible Pluto)} 2
+set {Orr(aptog labeled Pluto)} 0
+set {Orr(aptog showorbit Pluto)} 0
+set {Orr(aptog visible Charon)} 2
+set {Orr(aptog labeled Charon)} 0
+set {Orr(aptog showorbit Charon)} 0
+ap_apply
+tell_gv {(xform-set World transform {
+             1             0             0             0
+             0             1             0             0
+             0             0             1             0
+             0             0             0             1
+
+}
+)
+(window (if (real-id "Camera") "Camera" default)
+window {size 913 972}
+)
+(camera 'Camera' camera {
+camtoworld transform {
+    0.27418712   -0.81043911    0.51769668             0
+   -0.71493345    0.18826324       0.67337             0
+    -0.6431886   -0.55474812   -0.52779067             0
+   -0.98236775   -0.18156281  -1.6200393e-06             1
+
+}
+	perspective 1  stereo 0
+	fov 42
+	frameaspect 0.9393
+	focus 3
+	near 0.1
+	far 100
+}
+)
+}
+swell 250
+orbits 1
+eqgrid 0
+stars stars-to-mag-5.oogl
+now 1997.03.31 02:40

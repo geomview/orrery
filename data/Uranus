@@ -1,0 +1,4 @@
+appearance {
+	material  { diffuse .6 1 .85 }
+}
+< ball

@@ -1,0 +1,4 @@
+appearance {
+	texture { file venus.pgm.gz }
+}
+< latlon.mesh

@@ -1,0 +1,91 @@
+Installing The Orrery
+---------------------
+
+Quick summary
+-------------
+
+    0. Make sure you have configured, built, and installed
+       version 1.8.0 or higher of Geomview.
+
+    1. Let GEOMROOT stand for the top level of your Geomview
+       source tree.
+
+	% cd GEOMROOT/src/bin
+	% tar xvfz orrery-0.9.2.tar.gz
+
+    2.  % cd GEOMROOT
+	% ./configure
+
+    3.  % cd GEOMROOT/src/bin/orrery-0.9.2
+	% make install
+
+Details
+-------
+
+    0. For the rest of this discussion, let GEOMROOT stand for the
+       path of the top level directory of your Geomview source tree.
+       Make sure you have at least version 1.8.0 of Geomview.
+
+       These instructions assume that you have already configured,
+       built, and installed Geomview on your system.  You can,
+       however, configure and build both Geomview and the Orrery at the
+       same time if you want.  See the note on "Simultaneous
+       Configuring/Building" below for details on this.
+
+    1. Unpack the Orrery distribution into the "src/bin"
+       subdirectory of your Geomview source tree.  Once you've done
+       this, you should have a directory named something like
+       GEOMROOT/src/bin/orrery-0.9.2, where 0.9.2 is replaced
+       with whatever version of the Orrery you have.
+
+    2. Re-run Geomview's top-level 'configure' script:
+
+	  % cd GEOMROOT
+	  % ./configure [OPTIONS]
+
+       Give it the same options, if any, that you used when you last
+       ran it.  (If you're not sure what options you used, you can
+       find out by looking in GEOMROOT/config.status).
+
+       The point of this step is to make sure that GEOMROOT/configure
+       gets run after the Orrery has been unpacked into
+       GEOMROOT/src/bin.
+
+    3. If you're compiling/installing Geomview and the Orrery
+       at the same time, run "make install" in the GEOMROOT
+       directory.  If you have previously installed Geomview,
+       you can run "make install" in just the Orrery directory:
+
+            % cd GEOMROOT/src/bin/orrery-0.9.2
+	    % make install
+
+       If you don't want to "install", you can just run "make",
+       which will allow you to run the Orrery from the Geomview
+       build tree.  (Invoke "./geomview" from GEOMROOT and select
+       "Orrery" from the list of "External Modules".
+
+       Note that the Orrery consists of a Tcl/Tk script, so
+       there is nothing to compile.  Typing "make" creates a symbolic
+       link in GEOMROOT/data which allows the Orrery to run from
+       the build tree, and "make install" copies all the Orrery
+       files into the Geomview installation directory (usually
+       /usr/local/Geomview).
+
+
+Simultaneous Configuring/Building
+---------------------------------
+
+If you have just downloaded Geomview and the Orrery (and/or any other
+Geomview module packages), you can configure, build, and install
+everything in one fell swoop as follows:
+
+  a. unpack the Geomview source tree; let GEOMROOT stand for the path
+     of the top-level of this source tree (e.g. "geomview-1.8.0").
+  b. unpack whatever module packages you have into the
+     "GEOMROOT/src/bin" subdirectory
+  c. cd into the GEOMROOT directory and run 'configure', giving it
+     whatever options are appropriate for your system
+  d. type "make install" (from the GEOMROOT directory)
+
+See GEOMROOT/INSTALL.Geomview for details what options to pass to
+'configure'.

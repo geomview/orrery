@@ -1,0 +1,13 @@
+appearance {
+        material { diffuse .95 1 .85  edgecolor .95 1 .85 }
+        texture {
+	   transform { define T
+		1 0 0 0
+		0 .98 0 0
+		0 0   1 0
+		0 .01 0 1
+	   }
+	   file jupiter.ppm.gz
+	}
+}
+< cyl.mesh
