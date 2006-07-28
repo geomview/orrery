@@ -1,6 +1,6 @@
 SUBDIRS = orr
 
-datamodulesorrerydir = $(prefix)/share/geomview/modules/orrery
+datamodulesorrerydir = $(geomdatadir)/modules/orrery
 
 datamodulesorrery_DATA =     \
   orrery                     \

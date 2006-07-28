@@ -1,4 +1,4 @@
-datamodulesorreryorrdir = $(prefix)/share/geomview/modules/orrery/orr
+datamodulesorreryorrdir = $(geomdatadir)/modules/orrery/orr
 
 datamodulesorreryorr_DATA =       \
   Hale-Bopp-03.31-context.orr	  \

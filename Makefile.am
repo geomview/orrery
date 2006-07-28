@@ -1,3 +1,7 @@
+top_geom_srcdir = $(top_srcdir)/../../..
+
+ACLOCAL_AMFLAGS = -I ../../../m4
+
 EXTRA_DIST =        \
   mktxmesh          \
   orrery_funcs.c    \
@@ -9,15 +13,12 @@ EXTRA_DIST =        \
   testwish.c        \
   yale.star.gz
 
-
 SUBDIRS = data
-
-moduledir = $(libexecdir)/geomview
 
 module_DATA = .geomview-orrery
 
 .geomview-orrery:
-	echo '(emodule-define "Orrery" "wish $$GEOMDATA/modules/orrery/orrery")' > .geomview-orrery
+	echo '(emodule-define "Orrery" "wish $$GEOMDATA/orrery/orrery")' > .geomview-orrery
 
 
 #install-data-local:
