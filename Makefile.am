@@ -18,7 +18,7 @@ SUBDIRS = data
 module_DATA = .geomview-orrery
 
 .geomview-orrery:
-	echo '(emodule-define "Orrery" "wish $$GEOMDATA/orrery/orrery")' > .geomview-orrery
+	echo '(emodule-define "Orrery" "wish $$GEOMDATA/modules/orrery/orrery")' > .geomview-orrery
 
 
 #install-data-local:
