@@ -1,6 +1,6 @@
-AC_INIT
-AM_INIT_AUTOMAKE(orrery,[0.9.3],Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
+AC_INIT(orrery,[0.9.3],Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
 AC_CONFIG_AUX_DIR([../../..])
+AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_MSG_RESULT([configuring $PACKAGE $VERSION])
 AC_PREFIX_DEFAULT(/usr/local/Geomview)
