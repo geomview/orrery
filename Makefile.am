@@ -17,7 +17,7 @@ SUBDIRS = data
 
 module_DATA = .geomview-orrery
 
-.geomview-orrery:
+.geomview-orrery: Makefile
 	echo '(emodule-define "Orrery" "wish $$GEOMDATA/modules/orrery/orrery")' > .geomview-orrery
 
 
