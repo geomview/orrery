@@ -40,6 +40,7 @@ print "}\n";
 print "NUMESH\n";
 print "${nu+1} $nv\n";
 
+# latitude ranges from -0.5*$pi .. 0.5*Pi
 for($v=0; $v<$nv; $v++) {
     $vfrac = $v / ($nv-1);
     $lat = (.5 - $vfrac) * $pi;
@@ -51,10 +52,10 @@ for($v=0; $v<$nv; $v++) {
 	$x = $r*cos($lon);
 	$y = $r*sin($lon);
 	if($map eq "sinusoidal") {
-	   $s = .5 + $r * ($u/$nu - .5);
+	   $s = .5 + $r * ($ufrac - .5);
 	   $t = 1 - $vfrac;
 	} elsif($map eq "cylindrical") {
-	   $s = $u/$nu;
+	   $s = $ufrac;
 	   $t = 1 - $vfrac;
 	} elsif($map eq "rectangular") {
 	   $s = $ufrac;
