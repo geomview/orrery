@@ -1,6 +1,4 @@
-top_geom_srcdir = $(top_srcdir)/../../..
-
-ACLOCAL_AMFLAGS = -I ../../../m4
+ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST =        \
   mktxmesh          \
@@ -18,7 +16,7 @@ SUBDIRS = data
 module_DATA = .geomview-orrery
 
 .geomview-orrery: Makefile
-	echo '(emodule-define "Orrery" "wish $$GEOMDATA/modules/orrery/orrery")' > .geomview-orrery
+	echo '(emodule-define "Orrery" "wish $${GEOMVIEW_EMODULE_DIR}/tcl/orrery")' > .geomview-orrery
 
 
 #install-data-local:
@@ -29,7 +27,7 @@ module_DATA = .geomview-orrery
 #	rm -f ${datadir}/geomview/modules/orrery
 #	cp -r data ${datadir}/geomview/modules/orrery
 
-MAINTAINERCLEANFILES = .geomview-orrery
+CLEANFILES = .geomview-orrery
 
 CVSCLEANFILES = aclocal.m4 configure
 
@@ -37,3 +35,4 @@ cvs-clean: maintainer-clean
 	-rm -f ${CVSCLEANFILES}
 	-rm -f *.gz
 	find . -name Makefile.in -print | xargs rm
+

@@ -4,9 +4,13 @@ Makefile.in
 aclocal.m4
 autom4te.cache
 config.cache
+config.guess
 config.log
 config.status
+config.sub
 configure
 install-sh
 missing
 mkinstalldirs
+orrery-0.9.4.tar.bz2
+orrery-0.9.4.tar.gz

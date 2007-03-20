@@ -1,19 +1,13 @@
-AC_INIT(orrery,[0.9.3],Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
-AC_CONFIG_AUX_DIR([../../..])
-AM_INIT_AUTOMAKE
+AC_INIT(orrery, [0.9.4], Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
+AC_MSG_RESULT([configuring $PACKAGE_NAME $PACKAGE_VERSION])
+AC_CANONICAL_TARGET([])
+AM_INIT_AUTOMAKE([dist-bzip2 foreign 1.9])
 AM_MAINTAINER_MODE
-AC_MSG_RESULT([configuring $PACKAGE $VERSION])
+AC_CONFIG_SRCDIR([mktxmesh])
 AC_PREFIX_DEFAULT(/usr/local/Geomview)
 AC_PROG_INSTALL
 
-top_geom_builddir=../../..
-AC_SUBST(top_geom_builddir)
-
-GEOM_GET_CACHED_VALUE(moduledir)
-AC_SUBST(moduledir)
-
-GEOM_GET_CACHED_VALUE(geomdatadir)
-AC_SUBST(geomdatadir)
+GV_INIT_GEOMVIEW
 
 ########################################################################
 

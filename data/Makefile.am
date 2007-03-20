@@ -1,9 +1,12 @@
 SUBDIRS = orr
 
-datamodulesorrerydir = $(geomdatadir)/modules/orrery
+module_tcl_DATA = orrery
 
-datamodulesorrery_DATA =     \
-  orrery                     \
+dataorrerydir = $(geomdatadir)/Orrery
+
+dataorrery_DATA =            \
+  browser.tcl                \
+  vectext.tcl	             \
   Earth                      \
   Jupiter                    \
   Mars                       \
@@ -16,7 +19,6 @@ datamodulesorrery_DATA =     \
   Venus                      \
   backstep.xbm               \
   ball                       \
-  browser.tcl                \
   cyl.mesh                   \
   earth.ppm.Z                \
   jupiter.ppm.gz             \
@@ -45,9 +47,8 @@ datamodulesorrery_DATA =     \
   step.xbm                   \
   texture.xbm                \
   uranus.tiff                \
-  vectext.tcl                \
   venus.pgm.gz               \
   vis.xbm                    \
   wire.xbm
 
-EXTRA_DIST = ${datamodulesorrery_DATA}
+EXTRA_DIST = ${dataorrery_DATA} ${module_tcl_DATA}

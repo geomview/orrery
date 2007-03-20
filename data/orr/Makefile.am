@@ -1,4 +1,4 @@
-datamodulesorreryorrdir = $(geomdatadir)/modules/orrery/orr
+datamodulesorreryorrdir = $(geomdatadir)/Orrery/orr
 
 datamodulesorreryorr_DATA =       \
   Hale-Bopp-03.31-context.orr	  \
