@@ -1,4 +1,4 @@
-#! /usr/local/bin/tclsh
+#! @TCLSH@ 
 
 # This file is part of the Orrery, a solar system simulator for
 # Geomview (see www.geomview.org for details).

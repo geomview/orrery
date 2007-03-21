@@ -1,4 +1,4 @@
-#! /usr/local/bin/perl
+#! @PERL@
 
 if(@ARGV == 0 && -t STDOUT) {
   print STDERR "Usage: $0 {-stereo|-sinu|-rect|-cyl|-oneface} usize vsize > mesh.oogl
