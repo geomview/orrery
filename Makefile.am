@@ -1,17 +1,30 @@
 ACLOCAL_AMFLAGS = -I gvm4
 
 EXTRA_DIST =        \
-  mktxmesh          \
-  orrery_funcs.c    \
-  peri2elem         \
-  quick2elem        \
+  peri2elem.tcl     \
+  mktxmesh.pl       \
+  quick2elem.pl     \
+  stargv.pl         \
+  tailcone.pl       \
   reconf            \
-  stargv            \
-  tailcone          \
-  testwish.c        \
   yale.star.gz
 
 SUBDIRS = data
+
+bin_SCRIPTS =
+
+if PERL
+bin_SCRIPTS += mktxmesh quick2elem stargv tailcone
+%: %.pl Makefile
+	sed -e 's|\@PERL\@|$(PERL)|g' $< > $@
+	chmod +x $@
+endif
+if TCLSH
+bin_SCRIPTS += peri2elem
+%: %.tcl Makefile
+	sed -e 's|\@TCLSH\@|$(TCLSH)|g' $< > $@
+	chmod +x $@
+endif
 
 if HAVE_TCLTK
 LDADD = $(TK_LIB) $(TCL_LIB) $(XLIBS)
@@ -47,3 +60,5 @@ cvs-clean: maintainer-clean
 	-rm -f *.gz
 	find . -name Makefile.in -print | xargs rm
 
+clean-local:
+	rm -f $(bin_SCRIPTS)
