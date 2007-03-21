@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I gvm4
 
 EXTRA_DIST =        \
   mktxmesh          \
@@ -13,10 +13,21 @@ EXTRA_DIST =        \
 
 SUBDIRS = data
 
+if HAVE_TCLTK
+LDADD = $(TK_LIB) $(TCL_LIB) $(XLIBS)
+
+module_PROGRAMS = orrery
+orrery_SOURCES = orrery_funcs.c testwish.c
+
+INTERPRETER = orrery
+else
+INTERPRETER = wish
+endif
+
 module_DATA = .geomview-orrery
 
 .geomview-orrery: Makefile
-	echo '(emodule-define "Orrery" "wish $${GEOMVIEW_EMODULE_DIR}/tcl/orrery")' > .geomview-orrery
+	echo '(emodule-define "Orrery" "$(INTERPRETER) $${GEOMVIEW_EMODULE_DIR}/tcl/orrery")' > .geomview-orrery
 
 
 #install-data-local:

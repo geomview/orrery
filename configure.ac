@@ -9,7 +9,31 @@ AC_PROG_INSTALL
 
 GV_INIT_GEOMVIEW
 
-########################################################################
+################################################################################
+#
+# emodule specific checks.
+#
+
+# Check for Tcl/Tk with new CHECK_PACKAGE macro:
+
+GEOMVIEW_CHECK_PACKAGE(tcl, tcl, ${x_libraries}, ${XLIBS}, tcl.h, , ,optional)
+if test -n "${TCL_LIB}"; then
+  GEOMVIEW_CHECK_PACKAGE(tk, tk, ${x_libraries}, ${XLIBS}, tk.h, , ,optional)
+else
+  AM_CONDITIONAL(HAVE_TK, [false])
+fi
+AM_CONDITIONAL(HAVE_TCLTK, [test -n "${TCL_LIB}" -a -n "${TK_LIB}"])
+
+if ! test -n "${TCL_LIB}" -a -n "${TK_LIB}"; then
+  GV_PATH_PROG(wish)
+fi
+
+#
+# Also check for Perl and tclsh; if found then install some auxiliary programs
+#
+
+
+################################################################################
 
 AC_OUTPUT(Makefile
           data/Makefile

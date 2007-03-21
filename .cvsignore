@@ -1,3 +1,4 @@
+.deps
 .geomview-orrery
 Makefile
 Makefile.in
@@ -9,6 +10,7 @@ config.log
 config.status
 config.sub
 configure
+depcomp
 install-sh
 missing
 mkinstalldirs
