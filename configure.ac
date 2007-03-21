@@ -4,11 +4,11 @@ AC_MSG_RESULT([configuring $PACKAGE_NAME $PACKAGE_VERSION])
 AC_CANONICAL_TARGET([])
 AM_INIT_AUTOMAKE([dist-bzip2 foreign 1.9])
 AM_MAINTAINER_MODE
-AC_CONFIG_SRCDIR([testwish.c])
 AC_PREFIX_DEFAULT(/usr/local/Geomview)
 AC_PROG_INSTALL
-
 GV_INIT_GEOMVIEW
+
+AC_CONFIG_SRCDIR([testwish.c])
 
 ################################################################################
 #
