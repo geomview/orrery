@@ -31,6 +31,7 @@
 #include <tcl.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ASSERT(expr, msg)  if( !(expr) ) { error = msg; goto fail; }
 
@@ -40,14 +41,14 @@
 			   (dst)[2] = (a)[0]*(b)[1]-(a)[1]*(b)[0])
 
 static int
-getvec(char *str, int len, double *v)
+getvec(const char *str, int len, double *v)
 {
-  char *p = str;
+  const char *p = str;
   int i;
 
   for(i = 0; i < len; i++) {
-    char *p0 = p;
-    v[i] = strtod(p, &p);
+    const char *p0 = p;
+    v[i] = strtod(p, (char **)&p);
     if(p == p0) {
 	return 0;
     }
@@ -58,7 +59,8 @@ getvec(char *str, int len, double *v)
 }
 
 static int	/* vsadd a s b => a + s*b */
-vsaddCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+vsaddCmd(ClientData clientdata, Tcl_Interp *interp,
+	 int argc, const char *argv[])
 {
   char *error;
   double a[3], s, b[3];
@@ -83,7 +85,7 @@ vsaddCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int	/* vsadd sa a sb b => a*s+b */
-svsaddCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+svsaddCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double sa, a[3], sb, b[3];
@@ -109,7 +111,7 @@ svsaddCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int	/* svmul s v => s*v */
-svmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+svmulCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double s, v[3];
@@ -133,7 +135,7 @@ svmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int
-vmmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+vmmulCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double v[3];
@@ -158,7 +160,7 @@ vmmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int
-mmmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+mmmulCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double A[9];
@@ -188,7 +190,7 @@ mmmulCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int
-crossCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+crossCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double a[3], b[3], c[3];
@@ -210,7 +212,7 @@ crossCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int
-dotCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+dotCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
   char *error;
   double a[3], b[3];
@@ -231,9 +233,9 @@ dotCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 }
 
 static int
-magCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+magCmd(ClientData clientdata, Tcl_Interp *interp, int argc, const char *argv[])
 {
-  char *av[3];
+  const char *av[3];
 
   av[1] = av[2] = argv[1];
   return dotCmd(clientdata, interp, 3, av);
@@ -249,7 +251,8 @@ norm(double v[3])
 }
 
 static int
-normCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+normCmd(ClientData clientdata, Tcl_Interp *interp,
+	int argc, const char *argv[])
 {
   char *error;
   double s, v[3];
@@ -272,7 +275,8 @@ normCmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
 
 
 static int
-orthog3Cmd(ClientData *clientdata, Tcl_Interp *interp, int argc, char *argv[])
+orthog3Cmd(ClientData clientdata, Tcl_Interp *interp,
+	   int argc, const char *argv[])
 {
   char *error;
   double s, xv[3], yv[3], zv[3];
@@ -338,3 +342,10 @@ int orrery_init(Tcl_Interp *interp)
 		      (Tcl_CmdDeleteProc *) NULL);
     return TCL_OK;
 }
+
+/*
+ * Local Variables: ***
+ * mode: c ***
+ * c-basic-offset: 2 ***
+ * End: ***
+ */
