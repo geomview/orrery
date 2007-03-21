@@ -14,6 +14,11 @@ depcomp
 install-sh
 missing
 mkinstalldirs
+mktxmesh
 orrery
 orrery-0.9.4.tar.bz2
 orrery-0.9.4.tar.gz
+peri2elem
+quick2elem
+stargv
+tailcone
