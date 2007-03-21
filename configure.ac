@@ -1,3 +1,4 @@
+AC_PREREQ(2.59)
 AC_INIT(orrery, [0.9.4], Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
 AC_MSG_RESULT([configuring $PACKAGE_NAME $PACKAGE_VERSION])
 AC_CANONICAL_TARGET([])
