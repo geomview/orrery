@@ -5,17 +5,8 @@
 # bootstrap an orrery directory that has been checked out using CVS,
 # or to reconfigure a directory from scratch.
 
-# Create aclocal.m4, which has our local macros from m4 subdir
-# plus any automake macros from the system.
-aclocal
+autoreconf -i
 
-# create 'configure' from 'configure.in'
-autoconf
-
-# make sure the following files are present
-touch README AUTHORS NEWS ChangeLog
-
-# generate Makefile.in's
-automake -a
-
-./configure
+./configure --help
+echo
+echo "Run \`configure\' yourself, with the appropriate options"
