@@ -12,12 +12,12 @@ config.sub
 configure
 depcomp
 install-sh
+libtool
+ltmain.sh
 missing
 mkinstalldirs
 mktxmesh
-orrery
-orrery-0.9.4.tar.bz2
-orrery-0.9.4.tar.gz
+orrery*
 peri2elem
 quick2elem
 stargv
