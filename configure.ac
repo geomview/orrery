@@ -1,13 +1,8 @@
-AC_PREREQ(2.59)
 AC_INIT(orrery, [0.9.4], Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
-AC_MSG_RESULT([configuring $PACKAGE_NAME $PACKAGE_VERSION])
-AC_CANONICAL_TARGET([])
-AM_INIT_AUTOMAKE([dist-bzip2 1.9])
-AM_MAINTAINER_MODE
-AC_PROG_INSTALL
-GV_INIT_GEOMVIEW
 
 AC_CONFIG_SRCDIR([testwish.c])
+
+GV_INIT_GEOMVIEW(=,1,>=,9)
 
 ################################################################################
 #
@@ -55,7 +50,14 @@ else
 fi
 AC_SUBST(ORRGEOMDATA)
 
-AC_OUTPUT(Makefile
-          data/Makefile
-          data/orr/Makefile
-          data/orrery)
+AC_CONFIG_FILES(Makefile
+                data/Makefile
+                data/orr/Makefile
+                data/orrery
+                mktxmesh:mktxmesh.pl
+                quick2elem:quick2elem.pl
+                stargv:stargv.pl
+                tailcone:tailcone.pl
+                peri2elem:peri2elem.tcl)
+
+AC_OUTPUT
