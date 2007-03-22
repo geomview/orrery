@@ -39,6 +39,16 @@ GV_PATH_PROG(tclsh)
 
 ################################################################################
 
+GEOMVIEW_RESULT
+
+if test "${LOCAL_EMODULE}" = "true"; then
+	ORRGEOMDATA="`eval eval eval echo $geomdatadir`"
+else
+	ORRGEOMDATA="'${GEOMDATA}'"
+fi
+AC_SUBST(ORRGEOMDATA)
+
 AC_OUTPUT(Makefile
           data/Makefile
-          data/orr/Makefile)
+          data/orr/Makefile
+          data/orrery)

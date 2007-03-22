@@ -37,11 +37,24 @@ else
 INTERPRETER = wish
 endif
 
-module_DATA = .geomview-orrery
+EMODULES = .geomview-orrery
+
+if LOCAL_EMODULE
+homedir = $(HOME)
+home_DATA = $(EMODULES)
+modulepath = $(moduledir)/
+else
+if !GEOMVIEW_QUERY
+modulepath = $(moduledir)/
+module_DATA = $(EMODULES)
+else
+modulepath = $${GEOMVIEW_EMODULE_DIR}
+module_DATA = $(EMODULES)
+endif
+endif
 
 .geomview-orrery: Makefile
-	echo '(emodule-define "Orrery" "$(INTERPRETER) $${GEOMVIEW_EMODULE_DIR}/tcl/orrery")' > .geomview-orrery
-
+	echo '(emodule-define "Orrery" "$(INTERPRETER) $(modulepath)/tcl/orrery")' > .geomview-orrery
 
 #install-data-local:
 #	@if [ \! -d ${datadir}/geomview/modules ] ; then \
