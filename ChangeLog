@@ -1,3 +1,154 @@
+2007-03-22  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* configure.ac: Use standard installation prefix.
+
+	* .cvsignore: Ignore blah.
+
+	* configure.ac: Tcl/Tk needs on X11 (on Unix), so check for that.
+
+	* .cvsignore: Ignore some more auto stuff.
+
+	* gvm4/geomview.m4:
+	Small fixes (check for -lm, math.h, other minor stuff).
+
+	* gvm4/geomview.m4, gvm4/set-prefix.m4: Some fine-tuning
+
+	* Makefile.am, data/.cvsignore: Really feature a local installation.
+
+	* configure.ac, gvm4/geomview.m4, Makefile.am:
+	Feature local installation.
+
+	* data/orrery, data/orrery.in:
+	The wish script has now some configure substitutions.
+
+	* gvm4/check-package.m4, gvm4/geomview.m4: Autoconf madness.
+
+2007-03-21  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* configure.ac: Cosmetics.
+
+	* .cvsignore: Ignore auto-generated scripts.
+
+	* gvm4/geomview.m4:
+	Use GeomGet()/GeomSet() instead of accessing private
+	data-structures. Make sure the damn stuff compiles as external module,
+	outside the Geomview source-tree.
+
+	* gvm4/geomview.m4: Fix unbalanced if-fi
+
+	* gvm4/geomview.m4: Build system fixes.
+
+	* gvm4/geomview.m4: Optionally check for the version of Geomview.
+
+	* configure.ac: AC_PREREQ.
+
+	* Makefile.am, configure.ac: Interpreters with variable substitutions.
+
+	* gvm4/withtool.m4: CHECK_PROG/PATH_PROG duality.
+
+	* mktxmesh, mktxmesh.pl, peri2elem, peri2elem.tcl, quick2elem, quick2elem.pl, stargv, stargv.pl, tailcone, tailcone.pl:
+	Renamed, use variable substitution for interpreters.
+
+	* .cvsignore: Ignore orrery binary.
+
+	* .cvsignore, Makefile.am, configure.ac:
+	Compile orrery_funcs.c and testwish.c into orrery binary if Tcl/Tk
+	libraries are found.
+
+	* orrery_funcs.c: Fix compiler warnings.
+
+	* gvm4/withtool.m4: Absolute/relative path-name support.
+
+2007-03-20  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/withtool.m4, gvm4/geomview.m4: Initial revision.
+
+	* Makefile.am, configure.ac, data/Makefile.am, data/orr/Makefile.am, data/orrery, .cvsignore:
+	Update the automake machinery; orrery is configured as a real separate
+	module, outside the Geomview source tree, as should be.
+
+2007-03-18  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* mktxmesh: Comment/cosmetics.
+
+2007-02-10  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/lf_local.m4:
+	Hopefully LF_LINK_HEADERS() works _NOW_ for in-path and VPATH builds.
+
+	* gvm4/lf_local.m4: Undo a bug introduced previously by myself.
+
+2006-10-06  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/lf_local.m4:
+	Prefix fix for header linking was wrong. Correct that.
+
+	* gvm4/lf_local.m4:
+	Take relative/non relative source locations into account.
+
+2006-07-30  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* Makefile.am: Let .geomview-orrery depend on the Makefile
+
+2006-07-29  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* Makefile.am: Look under GEOMDATA/modules/orrery/orrery
+
+	* configure.ac:
+	Fixed configure.ac: AM_INIT_AUTOMAKE/AC_CONFIG_AUXDIR order.
+
+2006-07-28  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* data/orr/.cvsignore: Initial revision.
+
+	* data/.cvsignore: The usual ignore blah.
+
+	* data/Makefile.am, data/orr/Makefile.am, Makefile.am: Automake stuff.
+
+	* .cvsignore: CVS ignore pattern.
+
+	* configure.ac, configure.in: Renamed.
+
+2006-07-27  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/check-package.m4, gvm4/frameworks.m4, gvm4/set-prefix.m4:
+	Initial revision.
+
+2006-07-15  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/geom_local.m4: configure.in -> configure.ac
+
+2006-07-14  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/.cvsignore: * use one shared library (i.e. libgeomview.so)
+	* do not use undocumented stdio internals
+	* src/lib/aclib/fmemopen.c -- fmemopen replacement
+	* src/lib/oogl/utilt/iobuffer.[ch] -- totally buffered input, with seekback (pipes)
+	* a bunch of autoconf changes
+	* OpenGL is optional again
+	* reenable hinge module
+	* reenable flythrough module
+	* reenable cplxview module
+
+2006-06-24  Claus-Justus Heine  <Claus.Heine@Mathematik.Uni-Freiburg.DE>
+
+	* gvm4/geom_local.m4, gvm4/lf_local.m4: Fix "underquoted" AC_DEFUN's
+
+2004-02-22  Steve M. Robbins  <steve@nyongwa.montreal.qc.ca>
+
+	* gvm4/lf_local.m4: *** empty log message ***
+
+	* gvm4/Makefile.am: 	* m4/Makefile.am: Remove.
+		* Makefile.am (m4_files): Distribute the m4/*.m4 files.
+
+		* configure.in: Take care to avoid using MS Windows "find"
+		command.  Do not create m4/Makefile.
+
+2002-02-21  Mark Phillips  <mbp@geomtech.com>
+
+	* ChangeLog, INSTALL, Makefile.am, README, configure.in, data/Makefile.am, data/orr/Makefile.am, reconf:
+	*** empty log message ***
+
 2002-02-21  Mark Phillips  <mbp@geomtech.com>
 
 	* release 0.9.3
