@@ -15,15 +15,9 @@ bin_SCRIPTS =
 
 if PERL
 bin_SCRIPTS += mktxmesh quick2elem stargv tailcone
-%: %.pl Makefile
-	sed -e 's|\@PERL\@|$(PERL)|g' $< > $@
-	chmod +x $@
 endif
 if TCLSH
 bin_SCRIPTS += peri2elem
-%: %.tcl Makefile
-	sed -e 's|\@TCLSH\@|$(TCLSH)|g' $< > $@
-	chmod +x $@
 endif
 
 if HAVE_TCLTK
