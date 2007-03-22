@@ -1,7 +1,8 @@
+#*
+*.la
+*.lo
+*~
+.libs
 Makefile
 Makefile.in
-*~
-#*
-*.lo
-*.la
-.libs
+orrery
