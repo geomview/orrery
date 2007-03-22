@@ -1,5 +1,6 @@
 .deps
 .geomview-orrery
+.libs
 Makefile
 Makefile.in
 aclocal.m4
@@ -7,6 +8,8 @@ autom4te.cache
 blah
 config.cache
 config.guess
+config.h
+config.h.in
 config.log
 config.status
 config.sub
@@ -21,5 +24,6 @@ mktxmesh
 orrery*
 peri2elem
 quick2elem
+stamp-h1
 stargv
 tailcone
