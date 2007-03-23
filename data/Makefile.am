@@ -2,9 +2,9 @@ SUBDIRS = orr
 
 module_tcl_DATA = orrery
 
-dataorrerydir = $(geomdatadir)/Orrery
+orrerydatadir = $(geomdatadir)/Orrery
 
-dataorrery_DATA =            \
+orrerydata_DATA =            \
   browser.tcl                \
   vectext.tcl	             \
   Earth                      \
@@ -51,4 +51,4 @@ dataorrery_DATA =            \
   vis.xbm                    \
   wire.xbm
 
-EXTRA_DIST = ${dataorrery_DATA} ${module_tcl_DATA}
+EXTRA_DIST = ${orrerydata_DATA} ${module_tcl_DATA}
