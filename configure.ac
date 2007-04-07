@@ -19,12 +19,8 @@ AC_CACHE_VAL(ac_cv_XLIBS,[ac_cv_XLIBS="XLIBS='$XLIBS'"])
 
 # Check for Tcl/Tk with new CHECK_PACKAGE macro:
 
-GEOMVIEW_CHECK_PACKAGE(tcl, tcl, ${x_libraries}, ${XLIBS}, tcl.h, , ,optional)
-if test -n "${TCL_LIB}"; then
-  GEOMVIEW_CHECK_PACKAGE(tk, tk, ${x_libraries}, ${XLIBS}, tk.h, , ,optional)
-else
-  AM_CONDITIONAL(HAVE_TK, [false])
-fi
+GEOMVIEW_CHECK_PACKAGE([tcl],[tcl],[],[],[tcl.h],[],[],[required enabled])
+GEOMVIEW_CHECK_PACKAGE([tk],[tk],[${x_libraries}],[${XLIBS}],[tk.h],[],[${TCL_INCLUDES} ${X_CFLAGS}],[required enabled])
 AM_CONDITIONAL(HAVE_TCLTK, [test -n "${TCL_LIB}" -a -n "${TK_LIB}"])
 
 if ! test -n "${TCL_LIB}" -a -n "${TK_LIB}"; then
