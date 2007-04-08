@@ -22,6 +22,9 @@
 # By Stuart Levy, Geometry Center, University of Minnesota  slevy@geom.umn.edu
 # February, 1996
 ## $Log: orrery.in,v $
+## Revision 1.2  2007/04/08 06:38:57  rotdrop
+## env-var related fixes.
+##
 ## Revision 1.1  2007/03/22 12:50:14  rotdrop
 ## The wish script has now some configure substitutions.
 ##
@@ -188,7 +191,6 @@ set Orr(finemoon) 1
 #  Ephemeris:
 #	This script's unit of distance is one astronomical unit (A.U.),
 #	and its unit of time is a mean solar day
-
 set Orr(filepath) {data @ORRGEOMDATA@/Orrery @ORRGEOMDATA@/Orrery/orr}
 set Orr(elementfile) "orrery.elements"
 set Orr(epochyear) 1996.0
@@ -975,7 +977,7 @@ proc loadfilecache {cachename dirs} {
 }
 
 proc findpath {fname} {
-  global Orr Orr_filecache
+  global Orr Orr_filecache env
   if {[array size Orr_filecache] == 0} {
     loadfilecache Orr_filecache $Orr(filepath)
   }

@@ -42,7 +42,8 @@ GEOMVIEW_RESULT
 if test "${LOCAL_EMODULE}" = "true"; then
 	ORRGEOMDATA="`eval eval eval echo $geomdatadir`"
 else
-	ORRGEOMDATA="\${GEOMDATA}"
+# TCL env access
+	ORRGEOMDATA="\$GEOMDATA"
 fi
 AC_SUBST(ORRGEOMDATA)
 
