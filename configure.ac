@@ -42,7 +42,7 @@ GEOMVIEW_RESULT
 if test "${LOCAL_EMODULE}" = "true"; then
 	ORRGEOMDATA="`eval eval eval echo $geomdatadir`"
 else
-	ORRGEOMDATA="'${GEOMDATA}'"
+	ORRGEOMDATA="\${GEOMDATA}"
 fi
 AC_SUBST(ORRGEOMDATA)
 
