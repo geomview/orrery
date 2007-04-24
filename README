@@ -1,6 +1,11 @@
 			      THE ORRERY
-			    Version 0.9.3
+			    Version 0.9.4
 
+[ Version 0.9.4 is just an update to make sure that the Orrery still    ]
+[ builds with Geomview >= V1.9.0.                                       ]
+[                                                                       ]
+[ cH Tue Apr 24 2007
+[                                                                       ]
 [ Note: This release of the Orrery, version 0.9.3, is the same as       ]
 [ version 0.9.2 with the exception that I've changed some of the        ]
 [ settings in the Makefiles and the configure script in order to allow  ]
@@ -33,7 +38,8 @@ If you have questions, problems, or comments relating to this software
 
 INSTALLATION
 
-For installation instructions, see the file INSTALL.
+For installation instructions, see the file `INSTALL.Orrery'. The file
+`INSTALL' contains generic installation instructions.
 
 The .geomview-orrery file(s) mention "wish", the tcl/tk interpreter;
 they assume it's on your UNIX search path.  You may want to change

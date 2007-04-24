@@ -1,0 +1,242 @@
+README/INSTALL for the Orrery emodule for Geomview, a Tcl/Tk based
+solar system simulator.
+
+Contents
+--------
+  Description
+  Required Packages
+  Installation
+  History
+  Platform Specific Notes
+
+================================================================================
+
+Description
+-----------
+This is the `Orrery' emodule, a solar system simulator.  `emodules'
+are kind of plugins which extend the functionality of Geomview (an
+interactive 3d viewing program). Geomview is available separately from
+Sourceforge. Please see
+
+http://www.geomview.org
+
+for more information. The Labeler is a Tcl/Tk based extension module
+for Geomview. The source code is contained in
+
+./src/
+
+You may also want to have a look at the hvectext(1gv) tool, which also
+can be used to convert texts to OOGL objects for use with Geomview.
+
+Required Packages
+-----------------
+You need the Tcl and Tk libraries to compile the Labeler emodule. Tcl
+and Tk are available from
+
+http://www.tcl.tk/software/
+
+Also, as this is an extension module for Geomview, you need also to
+install Geomview; you have to do this first. See
+
+http://www.geomview.org/ (aka http://geomview.sourceforge.net/)
+
+Installation
+------------
+  Quick
+  Local Installation
+  Global Installation
+  Special Switches
+
+Quick
+~~~~~
+You have to install the Tcl/Tk libraries and Geomview first;
+afterwards you can install this package like you would install any
+other GNU autoconf based package. See the file ./INSTALL for generic
+installation instructions.
+
+Quick install instructions: if Geomview and the Tcl/Tk libraries were
+installed in their default locations, then all you need to do is
+
+./configure --prefix=PREFIX && make install
+
+to configure, compile and install the emodule. This, however, requires
+that you have write permissions for `PREFIX/libexec/geomview/' (were
+PREFIX defaults to `/usr/local/', if the `--prefix' option has not been
+specified).
+
+Local Installation
+~~~~~~~~~~~~~~~~~~
+To install the emodules locally, run configure with the
+`--enable-local-emodule' switch:
+
+./configure --prefix=PREFIX --enable-local-emodule && make install
+
+This still will install the binary under `PREFIX/libexec/geomview/',
+but writes the emodule definition into the file
+
+~/.geomview-labeler
+
+were Geomview will find it. So, for a local installation you would --
+perhaps -- do the following:
+
+./configure --prefix=${HOME}/software --enable-local-emodule && make install
+
+This would produce the two files
+
+${HOME}/software/libexec/geomview/labeler
+${HOME}/.geomview-labeler
+
+The emodule definition file `.geomview-labeler' will contain the full
+path to the real executables in this case so that nothing more should
+be needed to call the emodules from within Geomview.
+
+Global Installation
+~~~~~~~~~~~~~~~~~~~
+Just configure Geomview and gvemodules-tcltk with the same `--prefix'
+option; e.g. `--prefix=/usr'. This should work.
+
+If you run the `configure' script with the switch
+`--enable-geomview-query' then the installed version of Geomview -- if
+one is found -- will be queried for the proper location for the
+emodule binaries and definition files. Normally, this should not
+change anything, except when Geomview has been installed in a strange
+place.
+
+Consider you had installed Geomview locally in your home-directory
+below `${HOME}/Geomview' (by configuring the Geomview package with
+`--prefix=${HOME}/Geomview'), and the Tcl/Tk libraries below the
+prefix `${HOME}/software/', then you could run configure like follows:
+
+./configure --prefix=${HOME}/software --enable-geomview-query && make install
+
+This would result in auto-detection of the Tcl/Tk libraries and
+produce the two files
+
+${HOME}/Geomview/libexec/geomview/labeler
+${HOME}/Geomview/libexec/geomview/.geomview-labeler
+
+and again, this should result in a working configuration.
+
+Special Switches
+~~~~~~~~~~~~~~~~
+The configure script features some command line switches to fine-tune
+the locations where it searches for needed packages (i.e. Geomview,
+Tcl, Tk, ...). Please use `configure --help' to get help about these.
+
+HISTORY
+-------
+The Geomview project began in the summer of 1988 at the University of
+Minnesota's Geometry Center with the work of Pat Hanrahan on a viewing
+program called MinneView.  Shortly thereafter Charlie Gunn begin
+developing OOGL in conjunction with MinneView.  In 1991 a team of
+programmers headed by Mark Phillips, Stuart Levy, and Tamara Munzner
+set about developing a revised version of OOGL and a new viewer which
+they named Geomview.  In the time since then, many people have
+contributed, including (in alphabetical order): Steve Anderson, Rex
+Dieter, Celeste Fowler, Claus-Justus Heine, Todd Kaplan, Daniel Krech,
+Mario Lopez, Daeron Meyer, Mark Meuer, Steve Robbins, Timothy Rowley,
+Nathaniel Thurston, Scott Wisdom, Lloyd Wood and others.
+
+Platform Specific Notes
+-----------------------
+
+*** Tcl/Tk:
+On some platforms the Tcl/Tk libraries are installed with the
+version attached to the library name. In fact, this is the (broken)
+default installation policy of Tcl/Tk. So to be precise: some vendors
+do not additionally provide revision independent names. The configure
+script per default searches for libtcl.SUF and libtk.SUF (SUF meaning
+the appropriate suffix for libraries, e.g. `a' or `so' or `dll' or
+whatever). It may be necessary to run the configure script with the
+following switches on those platform:
+
+./configure OTHERSWITCHES --with-tcl-name=tcl8.4 --with-tk-name=tk8.4
+
+(provided have have installed Tcl/Tk version 8.4 on your system. Gnah.)
+
+*** Cygwin:
+
+The Tcl/Tk is quite broken on Cygwin.  Therefore it is not possible to
+communicate via the Tcl builtins `puts' and `gets' with Geomview, you
+will get a `broken pipe' error, and this renders most of the Tcl/Tk
+emodules as unusable on Cygwin. The problem is that Tcl/Tk on Cygwin
+is not compiled as a Unix application, but as a -- more or less --
+native Windoze application. It is currently not possible to compile
+Tcl/Tk (version 8.4) on Cygwin as Unix application library without
+patches. However, you can apply the patches supplied right at the end
+of this file to Tcl-8.4.14 and Tk-8.4.14 and then compile and install
+it on Cygwin using the Tcl/Tk build instructions for Unix. This means:
+Save the Tcl patch attached at the end of this document under the name
+`tcl8.4.14-cygwin.diff', then:
+
+cd tcl8.4.14
+patch -p1 < PATH_TO_THE_PATCH_FILE/tcl8.4.14-cygwin.diff
+cd unix
+./configure
+make
+make install
+
+Then do the analog for Tk. If you cannot make any sense of the
+instructions given above, then bother the Tcl/Tk and/or Cygwin
+maintainers, not me. Or use an operating system.
+
+Otherwise you will have working Tcl/Tk libraries installed under
+`/usr/local/lib/', with headers installed below
+`/usr/local/include'. You then have to run the configure script with
+the following switches:
+
+./configure OTHERSWITCHES --with-tcl-name=tcl8.4 --with-tk-name=tk8.4  \
+  --with-tcl-lib=/usr/local/lib --with-tk-lib=/usr/local/lib
+
+########################### tcl8.4.14-cygwin.diff ##############################
+diff -u --recursive --new-file tcl8.4.14/generic/tclClock.c tcl8.4.14-cygwin/generic/tclClock.c
+--- tcl8.4.14/generic/tclClock.c	2005-03-15 17:29:53.000000000 +0100
++++ tcl8.4.14-cygwin/generic/tclClock.c	2007-04-24 12:03:52.615433029 +0200
+@@ -291,7 +291,7 @@
+ 	return TCL_OK;
+     }
+ 
+-#if !defined(HAVE_TM_ZONE) && !defined(WIN32)
++#if !defined(HAVE_TM_ZONE) && !defined(WIN32) && defined(HAVE_TIMEZONE_VAR)
+     /*
+      * This is a kludge for systems not having the timezone string in
+      * struct tm.  No matter what was specified, they use the local
+@@ -349,7 +349,7 @@
+ #endif
+     Tcl_DStringFree(&uniBuffer);
+ 
+-#if !defined(HAVE_TM_ZONE) && !defined(WIN32)
++#if !defined(HAVE_TM_ZONE) && !defined(WIN32) && defined(HAVE_TIMEZONE_VAR)
+     if (useGMT) {
+         if (savedTZEnv != NULL) {
+             Tcl_SetVar2(interp, "env", "TZ", savedTZEnv, TCL_GLOBAL_ONLY);
+diff -u --recursive --new-file tcl8.4.14/unix/installManPage tcl8.4.14-cygwin/unix/installManPage
+--- tcl8.4.14/unix/installManPage	2006-10-19 19:26:15.000000000 +0200
++++ tcl8.4.14-cygwin/unix/installManPage	2007-04-24 12:04:59.013539528 +0200
+@@ -57,9 +57,9 @@
+ 	FIRST=$f
+ 	rm -f $DIR/$FIRST $DIR/$FIRST.*
+ 	sed -e "/man\.macros/r $SRCDIR/man.macros" -e "/man\.macros/d" \
+-	    $MANPAGE > $DIR/$FIRST
+-	chmod 444 $DIR/$FIRST
+-	$ZIP $DIR/$FIRST
++	    $MANPAGE > $DIR/$FIRST || true
++	chmod 444 $DIR/$FIRST || true
++	$ZIP $DIR/$FIRST || true
+     else
+ 	rm -f $DIR/$f $DIR/$f.*
+ 	ln $S$FIRST$Z $DIR/$f$Z
+########################### tk8.4.14-cygwin.diff ###############################
+diff -u --recursive --new-file tk8.4.14/generic/default.h tk8.4.14-cygwin/generic/default.h
+--- tk8.4.14/generic/default.h	2002-08-31 08:12:19.000000000 +0200
++++ tk8.4.14-cygwin/generic/default.h	2007-04-17 01:17:48.000000000 +0200
+@@ -16,8 +16,7 @@
+ #ifndef _DEFAULT
+ #define _DEFAULT
+ 
+-#if defined(__WIN32__) || defined(_WIN32) || \
+-    defined(__CYGWIN__) || defined(__MINGW32__)
++#if defined(__WIN32__) || defined(_WIN32) || defined(__MINGW32__)
+ #   include "tkWinDefault.h"
+ #else
+ #   if defined(MAC_OSX_TK)
