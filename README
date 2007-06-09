@@ -1,6 +1,11 @@
 			      THE ORRERY
 			    Version 0.9.4
 
+[ Version 0.9.5 is just an update to make sure that the Orrery still    ]
+[ builds with Geomview >= V1.9.2.                                       ]
+[                                                                       ]
+[ cH Sat Jun 9 2007
+[                                                                       ]
 [ Version 0.9.4 is just an update to make sure that the Orrery still    ]
 [ builds with Geomview >= V1.9.0.                                       ]
 [                                                                       ]
