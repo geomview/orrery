@@ -1,4 +1,4 @@
-AC_INIT(orrery, [0.9.5], Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
+AC_INIT(orrery, [0.9.6], Claus-Justus Heine <Claus.Heine@Mathematik.Uni-Freiburg.DE>)
 
 AC_CONFIG_SRCDIR([testwish.c])
 
